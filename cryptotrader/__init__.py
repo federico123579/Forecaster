@@ -1,5 +1,5 @@
 import os.path
-import logging
+import logging.config
 
 logging.config.dictConfig({
     'version': 1,
@@ -52,4 +52,4 @@ logging.config.dictConfig({
     }
 })
 
-__VERSION__ = "v0.1a1"
+__VERSION__ = "v0.0.1"

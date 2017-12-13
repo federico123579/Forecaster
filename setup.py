@@ -5,11 +5,11 @@ setup(
     version="v0.0.1",
     packages=find_packages(),
     install_requires=[
-        # 'pyyaml',
-        # 'python-telegram-bot'
+        'pyyaml',
+        'python-telegram-bot'
     ],
     include_package_data=True,
-    package_data={'': ['logs/.null.ini']}
+    package_data={'': ['logs/.null.ini', '**/*.yml']},
     zip_safe=False,
     author="Federico Lolli",
     author_email="federico123579@gmail.com",
@@ -17,11 +17,11 @@ setup(
     license="MIT",
     keywords="trading bot crypto bitcoin",
     url="https://github.com/federico123579/CryptoTrader",
-    # entry_points={
-    #     'console_scripts': [
-    #         'tradingbot = tradingbot.core.bot:main'
-    #     ]
-    # },
+    entry_points={
+        'console_scripts': [
+            'cryptotrader = cryptotrader.test:main'
+        ]
+    },
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Environment :: Web Environment',
