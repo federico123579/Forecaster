@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 
 """
-cryptotrader.view.tele
+bitgen.view.tele
 ~~~~~~~~~~~~~~
 
 This module provides telegram integration.
 """
 
 from telegram.ext import Updater, CommandHandler
-from cryptotrader.view.glob import OmniViewer, DefaultViewer
+from bitgen.view.glob import OmniViewer, DefaultViewer
 
 # logging
 import logging
-logger = logging.getLogger('cryptotrader.view.tele')
+logger = logging.getLogger('bitgen.view.tele')
 
 
 class TeleViewer(DefaultViewer):

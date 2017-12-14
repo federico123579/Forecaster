@@ -41,7 +41,7 @@ logging.config.dictConfig({
             'level': 'CRITICAL',
             'propagate': True
         },
-        'cryptotrader': {
+        'bitgen': {
             'handlers': ['rotating'],
             'level': 'CRITICAL'
         },

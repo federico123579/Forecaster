@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-cryptotrader.patterns
+bitgen.patterns
 ~~~~~~~~~~~~~~
 
 This module provides design patterns.

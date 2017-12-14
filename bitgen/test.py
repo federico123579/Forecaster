@@ -1,14 +1,14 @@
 import sys
 import time
-from cryptotrader.bot import Bot
+from bitgen.bot import Bot
 
 # logging
 import logging
-logger = logging.getLogger('cryptotrader.test')
+logger = logging.getLogger('bitgen.test')
 
 
 def main():
-    logging.getLogger('cryptotrader').setLevel(logging.DEBUG)
+    logging.getLogger('bitgen').setLevel(logging.DEBUG)
     bot = Bot()
     bot.view.tele.listen()
     logger.debug("bot launched")

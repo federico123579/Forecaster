@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 
 """
-cryptotrader.view.main
+bitgen.view.main
 ~~~~~~~~~~~~~~
 
 This module provides the main view component of the model MVC.
 """
 
-from cryptotrader.patterns import Observer
-from cryptotrader.view.tele import TeleViewer
+from bitgen.patterns import Observer
+from bitgen.view.tele import TeleViewer
 
 # logging
 import logging
-logger = logging.getLogger('cryptotrader.view')
+logger = logging.getLogger('bitgen.view')
 
 
 # define a general view client

@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
 """
-cryptotrader.view.glob
+bitgen.view.glob
 ~~~~~~~~~~~~~~
 
 This module provides glob access.
 """
 
-from cryptotrader.patterns import Subject
-from cryptotrader.glob import Collector
+from bitgen.patterns import Subject
+from bitgen.glob import Collector
 
 
 # define a singleton for strategy behavior pattern

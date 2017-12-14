@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="cryptotrader",
+    name="bitgen",
     version="v0.0.1",
     packages=find_packages(),
     install_requires=[
@@ -16,10 +16,10 @@ setup(
     description="Package to trade with cryptocurrencies with algorithms",
     license="MIT",
     keywords="trading bot crypto bitcoin",
-    url="https://github.com/federico123579/CryptoTrader",
+    url="https://github.com/federico123579/bitgen",
     entry_points={
         'console_scripts': [
-            'cryptotrader = cryptotrader.test:main'
+            'bitgen = bitgen.test:main'
         ]
     },
     classifiers=[

@@ -1,4 +1,4 @@
-# CryptoTrader
+# BitGen
 
 An automatic trading bot that use cryptocurrencies to gain profits, with the integration of coinbase.
 

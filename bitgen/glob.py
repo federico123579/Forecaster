@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-cryptotrader.glob
+bitgen.glob
 ~~~~~~~~~~~~~~
 
 This module contains all strategies file paths.
@@ -10,11 +10,11 @@ This module contains all strategies file paths.
 import os
 import os.path
 import yaml
-from cryptotrader.patterns import Subject, Observer, Singleton
+from bitgen.patterns import Subject, Observer, Singleton
 
 # logging
 import logging
-logger = logging.getLogger('cryptotrader.glob')
+logger = logging.getLogger('bitgen.glob')
 
 
 # define singleton collector of configurers
