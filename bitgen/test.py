@@ -10,7 +10,7 @@ logger = logging.getLogger('bitgen.test')
 def main():
     logging.getLogger('bitgen').setLevel(logging.DEBUG)
     bot = Bot()
-    bot.view.tele.listen()
+    bot.start()
     logger.debug("bot launched")
     try:
         while True:

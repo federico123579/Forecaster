@@ -6,7 +6,8 @@ setup(
     packages=find_packages(),
     install_requires=[
         'pyyaml',
-        'python-telegram-bot'
+        'python-telegram-bot',
+        'coinbase'
     ],
     include_package_data=True,
     package_data={'': ['logs/.null.ini', '**/*.yml']},

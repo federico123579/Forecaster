@@ -24,6 +24,7 @@ class Collector(Observer, metaclass=Singleton):
         self.collection = {}
 
     def mount(self, strat_nam):
+        logger.debug("mounting %s" % strat_nam)
         path = getattr(FilePathes, strat_nam)
         conf = Configurer(path)
         conf.name = strat_nam
@@ -32,7 +33,6 @@ class Collector(Observer, metaclass=Singleton):
 
     def notify(self, observable, event, name):
         if event == 'update' and isinstance(name, str):
-            logger.debug("observer notified")
             self.collection[name] = observable
 
 
@@ -49,7 +49,6 @@ class Configurer(Subject):
         self.checkFile()
         with open(self.config_file, 'r') as f:
             yaml_dict = yaml.load(f)
-            logger.debug('yaml file found')
             if yaml_dict is not None:
                 self.config = yaml_dict
         self.notify_observers(event='update', name=self.name)
@@ -77,12 +76,12 @@ def get_path(name):
     data_folder = os.path.join(os.path.dirname(__file__), 'data')
     file_path = os.path.join(data_folder, name)
     if not os.path.isfile(file_path):
-        raise ValueError('file not found')
-    else:
-        return file_path
+        logger.debug("%s not found" % file_path)
+    return file_path
 
 
 # define namespace for file pathes
 class FilePathes(object):
     """namespace"""
     SECURITY_DATA = get_path('security.yml')
+    PERS_DATA = get_path('data.yml')
