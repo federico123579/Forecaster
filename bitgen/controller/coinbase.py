@@ -10,6 +10,7 @@ This module provides the interface for coinbase.
 from coinbase.wallet.client import Client
 from bitgen.controller.glob import OmniController, DefaultController
 from bitgen.controller.exceptions import *
+from bitgen.exceptions import *
 
 # logging
 import logging
