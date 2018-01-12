@@ -19,6 +19,11 @@ class OmniModel(Collector):
         self.mount('PERS_DATA')
         self.pers_data = self.collection['PERS_DATA'].config
 
+    def update(self):
+        for key in self.collection.keys():
+            self.collection[key].read()
+        self.pers_data = self.collection['PERS_DATA'].config
+
 
 # define a default model
 class DefaultModel(Subject):

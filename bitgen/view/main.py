@@ -28,6 +28,9 @@ class View(Subject, Observer):
     def configurate(self):
         self.tele.config_needed()
 
+    def prediction(self, pred_dict):
+        self.tele.out_pred(pred_dict)
+
     # handle all events
     def notify(self, observable, event):
         logger.debug("View notified - %s" % event)

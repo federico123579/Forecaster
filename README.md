@@ -9,6 +9,6 @@ There will be used these different design patterns:
 - structural: **```mvc```**, **```composite```**
 - behavioral: **```observer```**, **```strategy```**
 
-## ToDos
+## ToDos
 
 - Make OAuth2 integration

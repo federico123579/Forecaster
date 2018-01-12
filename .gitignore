@@ -25,6 +25,7 @@ wheels/
 .installed.cfg
 *.egg
 *.lock
+.ipynb*
 
 # Installer logs
 pip-log.txt

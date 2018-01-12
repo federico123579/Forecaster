@@ -5,9 +5,14 @@ setup(
     version="v0.0.1",
     packages=find_packages(),
     install_requires=[
+        'pandas',
+        'numpy',
+        'scikit-learn',
+        'keras',
+        'tensorflow',
         'pyyaml',
         'python-telegram-bot',
-        'coinbase'
+        'h5py'
     ],
     include_package_data=True,
     package_data={'': ['logs/.null.ini', '**/*.yml']},
