@@ -8,7 +8,9 @@ Verranno utilizzati diversi *Design Patterns*:
 - creational: **```singleton```**, **```builder```**
 - structural: **```mvc```**, **```composite```**
 - behavioral: **```observer```**, **```strategy```**
+
 ### Main Libraries
+
 - Keras LSTM Network
 - Telegram API
 - Trading212 API (in futuro)
