@@ -1,6 +1,9 @@
 import os.path
 import logging.config
 
+__AUTHOR__ = "Federico Lolli"
+__VERSION__ = "v0.1a0"
+
 logging.config.dictConfig({
     'version': 1,
     'disable_existing_loggers': False,
@@ -51,5 +54,3 @@ logging.config.dictConfig({
         }
     }
 })
-
-__VERSION__ = "v0.0.1"

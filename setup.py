@@ -1,8 +1,9 @@
+from forecaster import __VERSION__
 from setuptools import setup, find_packages
 
 setup(
     name="forecaster",
-    version="v0.0.1",
+    version="__VERSION__",
     packages=find_packages(),
     install_requires=[
         'pandas',
