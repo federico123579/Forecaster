@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="bitgen",
+    name="forecaster",
     version="v0.0.1",
     packages=find_packages(),
     install_requires=[
@@ -22,10 +22,10 @@ setup(
     description="Package to trade with cryptocurrencies with algorithms",
     license="MIT",
     keywords="trading bot crypto bitcoin",
-    url="https://github.com/federico123579/bitgen",
+    url="https://github.com/federico123579/forecaster",
     entry_points={
         'console_scripts': [
-            'bitgen = bitgen.test:main'
+            'forecaster = forecaster.test:main'
         ]
     },
     classifiers=[

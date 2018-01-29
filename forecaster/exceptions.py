@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-bitgen.exceptions
+forecaster.exceptions
 ~~~~~~~~~~~~~~
 
 This module provides main exceptions.
@@ -9,7 +9,7 @@ This module provides main exceptions.
 
 # logging
 import logging
-logger = logging.getLogger('bitgen.exceptions')
+logger = logging.getLogger('forecaster.exceptions')
 
 
 class MissingConfig(Exception):

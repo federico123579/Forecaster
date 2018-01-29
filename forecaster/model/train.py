@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-bitgen.model.train
+forecaster.model.train
 ~~~~~~~~~~~~~~
 
 This module provide training of the Neural Network.
@@ -16,7 +16,7 @@ from keras.models import Sequential
 from keras.layers import Dense, Activation, LSTM
 # logging
 import logging
-logger = logging.getLogger('bitgen.model.train')
+logger = logging.getLogger('forecaster.model.train')
 
 
 # get raw data from website

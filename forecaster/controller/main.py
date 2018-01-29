@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
 
 """
-bitgen.controller.main
+forecaster.controller.main
 ~~~~~~~~~~~~~~
 
 This module provides the main controller component of the model MVC.
 """
 
-from bitgen.patterns import Subject, Observer
-from bitgen.controller.exceptions import *
-from bitgen.model import Model
-from bitgen.view import View
+from forecaster.patterns import Subject, Observer
+from forecaster.controller.exceptions import *
+from forecaster.model import Model
+from forecaster.view import View
 
 # logging
 import logging
-logger = logging.getLogger('bitgen.controller')
+logger = logging.getLogger('forecaster.controller')
 
 
 # define a superior controller

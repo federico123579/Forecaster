@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
 
 """
-bitgen.controller.coinbase
+forecaster.controller.coinbase
 ~~~~~~~~~~~~~~
 
 This module provides the interface for coinbase.
 """
 
 from coinbase.wallet.client import Client
-from bitgen.controller.glob import OmniController, DefaultController
-from bitgen.controller.exceptions import *
-from bitgen.exceptions import *
+from forecaster.controller.glob import OmniController, DefaultController
+from forecaster.controller.exceptions import *
+from forecaster.exceptions import *
 
 # logging
 import logging
-logger = logging.getLogger('bitgen.controller.coinbase')
+logger = logging.getLogger('forecaster.controller.coinbase')
 
 
 class CoinbaseAPI(DefaultController):

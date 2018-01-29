@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-bitgen.model.forex
+forecaster.model.forex
 ~~~~~~~~~~~~~~
 
 This module provides the model for predictiong forex trends.
@@ -17,13 +17,13 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from keras.models import load_model
-from bitgen.model.glob import OmniModel, DefaultModel
-from bitgen.exceptions import *
-from bitgen.model.exceptions import *
+from forecaster.model.glob import OmniModel, DefaultModel
+from forecaster.exceptions import *
+from forecaster.model.exceptions import *
 
 # logging
 import logging
-logger = logging.getLogger('bitgen.model.forex')
+logger = logging.getLogger('forecaster.model.forex')
 
 
 # url for updates

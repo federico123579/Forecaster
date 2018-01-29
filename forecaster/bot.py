@@ -1,11 +1,11 @@
 #!/usr/bin/env python3.6
 # -*- coding: utf-8 -*-
 
-from bitgen.controller import UltraController
+from forecaster.controller import UltraController
 
 # logging
 import logging
-logger = logging.getLogger('bitgen')
+logger = logging.getLogger('forecaster')
 
 
 class Bot(UltraController):

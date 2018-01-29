@@ -1,14 +1,14 @@
 import sys
 import time
-from bitgen.bot import Bot
+from forecaster.bot import Bot
 
 # logging
 import logging
-logger = logging.getLogger('bitgen.test')
+logger = logging.getLogger('forecaster.test')
 
 
 def main():
-    logging.getLogger('bitgen').setLevel(logging.DEBUG)
+    logging.getLogger('forecaster').setLevel(logging.DEBUG)
     bot = Bot()
     bot.start()
     logger.debug("bot launched")

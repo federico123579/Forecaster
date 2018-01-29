@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-bitgen.controller.exceptions
+forecaster.controller.exceptions
 ~~~~~~~~~~~~~~
 
 This module provides exceptions for controller.
@@ -9,7 +9,7 @@ This module provides exceptions for controller.
 
 # logging
 import logging
-logger = logging.getLogger('bitgen.controller.exceptions')
+logger = logging.getLogger('forecaster.controller.exceptions')
 
 
 class ActionNotPermitted(Exception):

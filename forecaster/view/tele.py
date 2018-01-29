@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-bitgen.view.tele
+forecaster.view.tele
 ~~~~~~~~~~~~~~
 
 This module provides telegram integration.
@@ -11,11 +11,11 @@ import telegram
 from telegram import Bot
 from telegram.ext import Updater, CommandHandler, ConversationHandler, MessageHandler
 from telegram.ext.filters import Filters
-from bitgen.view.glob import OmniViewer, DefaultViewer
+from forecaster.view.glob import OmniViewer, DefaultViewer
 
 # logging
 import logging
-logger = logging.getLogger('bitgen.view.tele')
+logger = logging.getLogger('forecaster.view.tele')
 
 
 class TeleViewer(DefaultViewer):

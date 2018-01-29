@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
 """
-bitgen.controller.glob
+forecaster.controller.glob
 ~~~~~~~~~~~~~~
 
 This module provides glob access.
 """
 
-from bitgen.patterns import Subject
-from bitgen.glob import Collector
+from forecaster.patterns import Subject
+from forecaster.glob import Collector
 
 
 # define a singleton for strategy behavior pattern

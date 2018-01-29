@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
 
 """
-bitgen.model.main
+forecaster.model.main
 ~~~~~~~~~~~~~~
 
 This module provides the main model component of the pattern MVC.
 """
 
-from bitgen.patterns import Subject, Observer
-from bitgen.model.forex import ForexPredict
-from bitgen.model.train import train
-from bitgen.exceptions import *
-from bitgen.model.exceptions import *
+from forecaster.patterns import Subject, Observer
+from forecaster.model.forex import ForexPredict
+from forecaster.model.train import train
+from forecaster.exceptions import *
+from forecaster.model.exceptions import *
 
 # logging
 import logging
-logger = logging.getLogger('bitgen.model')
+logger = logging.getLogger('forecaster.model')
 
 
 # define a general controller

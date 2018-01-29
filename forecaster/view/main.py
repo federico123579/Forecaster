@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 
 """
-bitgen.view.main
+forecaster.view.main
 ~~~~~~~~~~~~~~
 
 This module provides the main view component of the model MVC.
 """
 
-from bitgen.patterns import Subject, Observer
-from bitgen.view.tele import TeleViewer
+from forecaster.patterns import Subject, Observer
+from forecaster.view.tele import TeleViewer
 
 # logging
 import logging
-logger = logging.getLogger('bitgen.view')
+logger = logging.getLogger('forecaster.view')
 
 
 # define a general view client

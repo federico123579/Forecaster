@@ -41,7 +41,7 @@ logging.config.dictConfig({
             'level': 'CRITICAL',
             'propagate': True
         },
-        'bitgen': {
+        'forecaster': {
             'handlers': ['rotating'],
             'level': 'CRITICAL'
         },

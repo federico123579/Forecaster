@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-bitgen.patterns
+forecaster.patterns
 ~~~~~~~~~~~~~~
 
 This module provides design patterns.

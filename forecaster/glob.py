@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-bitgen.glob
+forecaster.glob
 ~~~~~~~~~~~~~~
 
 This module contains all strategies file paths.
@@ -10,11 +10,11 @@ This module contains all strategies file paths.
 import os
 import os.path
 import yaml
-from bitgen.patterns import Subject, Observer, Singleton
+from forecaster.patterns import Subject, Observer, Singleton
 
 # logging
 import logging
-logger = logging.getLogger('bitgen.glob')
+logger = logging.getLogger('forecaster.glob')
 
 
 # define singleton collector of configurers
