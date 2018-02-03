@@ -8,9 +8,10 @@ This module provides the main controller component of the model MVC.
 """
 
 from forecaster.patterns import Subject, Observer
-from forecaster.controller.exceptions import *
+from forecaster.controller.tradingapi import ClientController
 from forecaster.model import Model
 from forecaster.view import View
+from forecaster.controller.exceptions import *
 
 # logging
 import logging
@@ -53,10 +54,11 @@ class Controller(Subject, Observer):
     """control all controllers"""
     def __init__(self):
         super().__init__()
+        self.client = ClientController('demo')
 
     def start_bot(self):
-        pass
-        # TODO start bot function
+        self.client.start()
+        logger.debug("Controller started")
 
     def stop_bot(self):
         pass

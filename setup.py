@@ -12,6 +12,7 @@ setup(
         'keras',
         'tensorflow',
         'pyyaml',
+        'trading212-api',
         'python-telegram-bot',
         'h5py'
     ],

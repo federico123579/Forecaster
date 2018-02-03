@@ -16,6 +16,9 @@ from forecaster.patterns import Subject, Observer, Singleton
 import logging
 logger = logging.getLogger('forecaster.glob')
 
+# constants
+CURR = ['EURUSD', 'USDCHF', 'GBPUSD', 'USDJPY', 'USDCAD']
+
 
 # define singleton collector of configurers
 class Collector(Observer, metaclass=Singleton):

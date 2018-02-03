@@ -117,7 +117,7 @@ def predict(test, test_label, predicted):
 
 
 # main func
-def train(hours, epochs=10):
+def train(epochs=10):
     logger.info("start training")
     raw_data = get_raw_data()['EURUSD']
     raw_data = raw_data.iloc[::-1]
@@ -126,22 +126,22 @@ def train(hours, epochs=10):
     sma_values = [sma(x, 14) for x in group_by(closes, 14)]
     logger.debug("got smas")
     data = np.c_[raw_data.values[14:], np.expand_dims(sma_values, axis=1)]
-    data = group_by(data, hours)
+    data = group_by(data, 10)
     logger.debug("grouped")
     labels = make_labels(data)
     logger.debug("labels")
     data = scale(data)
     logger.debug("scaled")
-    mod = make_nn(hours)
+    mod = make_nn(10)
     logger.debug("made neural network")
     x_train, x_test = split(data, -1)
     y_train, y_test = split(labels, -1)
     mod.fit(x_train, y_train, epochs=epochs, batch_size=64)
     logger.debug("fit")
     path = os.path.join(os.path.dirname(
-        os.path.dirname(os.path.abspath(__file__))), 'data', 'model_%d_hours.h5' % hours)
+        os.path.dirname(os.path.abspath(__file__))), 'data', 'model.h5')
     mod.save(path)
-    logger.debug("saved model %d hours" % hours)
+    logger.debug("saved model")
 
 
 if __name__ == "__main__":

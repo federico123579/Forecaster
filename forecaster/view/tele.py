@@ -11,6 +11,7 @@ import telegram
 from telegram import Bot
 from telegram.ext import Updater, CommandHandler, ConversationHandler, MessageHandler
 from telegram.ext.filters import Filters
+from forecaster.glob import CURR
 from forecaster.view.glob import OmniViewer, DefaultViewer
 
 # logging
@@ -33,8 +34,10 @@ class TeleViewer(DefaultViewer):
         handlers = []  # append every command
         handlers.append(ConversationHandler(
             entry_points=[CommandHandler('config', self.cmd_config)],
-            states={'api_key':
-                    [MessageHandler(Filters.text, self.api_key, pass_chat_data=True)]},
+            states={'username_key':
+                    [MessageHandler(Filters.text, self.username_key, pass_chat_data=True)],
+                    'password_key':
+                    [MessageHandler(Filters.text, self.password_key, pass_chat_data=True)]}
             fallbacks=[CommandHandler('cancel', ConversationHandler.END)]))
         handlers.append(CommandHandler('predict', self.cmd_predict))
         handlers.append(CommandHandler('start', self.cmd_start))
@@ -67,17 +70,23 @@ class TeleViewer(DefaultViewer):
     def cmd_config(self, bot, update):
         logger.debug("config command caught")
         update.message.reply_text("Bot configuration. This is for logging in coinbase.")
-        update.message.reply_text("Please insert your api_key")
-        return 'api_key'
+        update.message.reply_text("Please insert your Trading212 username")
+        return 'username_key'
 
     def cmd_predict(self, bot, update):
         logger.debug("predict command caught")
         update.message.reply_text("Predicting trend...")
         self.notify_observers('predict')
 
-    def api_key(self, bot, update, chat_data):
-        chat_data['api'] = update.message.text
-        OmniViewer().pers_data['oneforge-api'] = chat_data['api']
+    def username_key(self, bot, update, chat_data):
+        chat_data['username'] = update.message.text
+        OmniViewer().pers_data['username'] = chat_data['username']
+        update.message.reply_text("Please insert password")
+        return 'password_key'
+
+    def password_key(self, bot, update, chat_data):
+        chat_data['password'] = update.message.text
+        OmniViewer().pers_data['password'] = chat_data['password']
         logger.debug("%s" % OmniViewer().pers_data)
         OmniViewer().collection['PERS_DATA'].save()
         update.message.reply_text("Configuration saved")
@@ -91,10 +100,9 @@ class TeleViewer(DefaultViewer):
     def out_pred(self, pred_dict):
         logger.debug("prediction processed")
         text = "Prediction:"
-        for key in pred_dict.keys():
-            text += "\nTiming: %d hours" % int(key)
-            for curr in ['EURUSD', 'USDCHF', 'GBPUSD', 'USDJPY', 'USDCAD']:
-                text += '\n_%s_ - *%.3f*' % (curr, pred_dict[key][curr])
+        text += "\nTiming: 10 hours"
+        for curr in CURR:
+            text += '\n_%s_ - *%.3f*' % (curr, pred_dict[curr])
         self.bot.send_message(chat_id=self.chat_id, text=text,
                               parse_mode=telegram.ParseMode.MARKDOWN)
 
