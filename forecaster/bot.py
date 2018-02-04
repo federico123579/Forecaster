@@ -1,6 +1,13 @@
 #!/usr/bin/env python3.6
 # -*- coding: utf-8 -*-
 
+"""
+forecaster.bot
+~~~~~~~~~~~~~~
+
+The bot.
+"""
+
 import sys
 import time
 from forecaster.core.controller import UltraController

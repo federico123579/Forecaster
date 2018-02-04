@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-forecaster.controller.main
+forecaster.core.controller.main
 ~~~~~~~~~~~~~~
 
 This module provides the main controller component of the model MVC.

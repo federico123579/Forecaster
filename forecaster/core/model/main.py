@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-forecaster.model.main
+forecaster.core.model.main
 ~~~~~~~~~~~~~~
 
 This module provides the main model component of the pattern MVC.

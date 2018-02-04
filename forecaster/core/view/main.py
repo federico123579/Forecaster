@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-forecaster.view.main
+forecaster.core.view.main
 ~~~~~~~~~~~~~~
 
 This module provides the main view component of the model MVC.

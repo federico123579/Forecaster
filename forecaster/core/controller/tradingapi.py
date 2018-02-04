@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-forecaster.controller.tradingapi
+forecaster.core.controller.tradingapi
 ~~~~~~~~~~~~~~
 
 This module provides the the controller for API.

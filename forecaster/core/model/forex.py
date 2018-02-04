@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-forecaster.model.forex
+forecaster.core.model.forex
 ~~~~~~~~~~~~~~
 
 This module provides the model for predictiong forex trends.

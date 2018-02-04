@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-forecaster.model.train
+forecaster.core.model.train
 ~~~~~~~~~~~~~~
 
 This module provide training of the Neural Network.

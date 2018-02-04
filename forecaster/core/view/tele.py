@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-forecaster.view.tele
+forecaster.core.view.tele
 ~~~~~~~~~~~~~~
 
 This module provides telegram integration.
