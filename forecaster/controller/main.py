@@ -31,15 +31,15 @@ class UltraController(Observer):
     def start(self):
         self.view.start()  # listen commands
 
+    def stop(self):
+        self.view.stop()  # stop the updater
+
     # handle all events
     def notify(self, observable, event, **kwargs):
         logger.debug("Controller notified - %s" % event)
         if event == 'start-bot':
-            try:
-                self.model.start()
-                self.controller.start_bot()
-            except Exception as e:
-                logger.exception(e)
+            self.model.start()
+            self.controller.start_bot()
         elif event == 'stop-bot':
             self.controller.stop_bot()
         elif event == 'config':
@@ -48,10 +48,7 @@ class UltraController(Observer):
             self.model.forex.hist = self.controller.hist_data(  # OPTIMIZE
                 kwargs['data']['name'], kwargs['data']['limit'])
         elif event == 'predict':
-            try:
-                self.view.prediction(self.model.pred_all())
-            except Exception as e:
-                logger.exception(e)
+            self.view.prediction(self.model.pred_all())
 
 
 # define a general controller

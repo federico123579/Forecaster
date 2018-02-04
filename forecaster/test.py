@@ -17,7 +17,7 @@ def main():
             time.sleep(1)
     except KeyboardInterrupt:
         sys.stderr.write('\r' + "exiting...\n")
-        bot.view.tele.updater.stop()
+        bot.stop()
         logger.debug("exited")
 
 

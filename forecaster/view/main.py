@@ -25,6 +25,9 @@ class View(Subject, Observer):
     def start(self):
         self.tele.listen()
 
+    def stop(self):
+        self.tele.updater.stop()
+
     def configurate(self):
         self.tele.config_needed()
 
