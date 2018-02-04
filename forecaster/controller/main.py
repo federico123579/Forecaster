@@ -11,7 +11,6 @@ from forecaster.patterns import Subject, Observer
 from forecaster.controller.tradingapi import ClientController
 from forecaster.model import Model
 from forecaster.view import View
-from forecaster.controller.exceptions import *
 
 # logging
 import logging
@@ -33,15 +32,21 @@ class UltraController(Observer):
         self.view.start()  # listen commands
 
     # handle all events
-    def notify(self, observable, event):
+    def notify(self, observable, event, **kwargs):
         logger.debug("Controller notified - %s" % event)
         if event == 'start-bot':
-            self.model.start()
-            self.controller.start_bot()
+            try:
+                self.model.start()
+                self.controller.start_bot()
+            except Exception as e:
+                logger.exception(e)
         elif event == 'stop-bot':
             self.controller.stop_bot()
         elif event == 'config':
             self.view.configurate()
+        elif event == 'historical_data':  # get hist candles with amount
+            self.model.forex.hist = self.controller.hist_data(  # OPTIMIZE
+                kwargs['data']['name'], kwargs['data']['limit'])
         elif event == 'predict':
             try:
                 self.view.prediction(self.model.pred_all())
@@ -57,9 +62,16 @@ class Controller(Subject, Observer):
         self.client = ClientController('demo')
 
     def start_bot(self):
-        self.client.start()
+        try:  # try to log in
+            self.client.start()
+        except MissingConfig:  # if credentials not in config
+            self.notify_observers('config')
         logger.debug("Controller started")
 
     def stop_bot(self):
         pass
         # TODO stop bot function
+
+    def hist_data(self, name, amount):
+        """get historical data"""
+        return self.client.client.get_historical_data(name, amount, '1h')

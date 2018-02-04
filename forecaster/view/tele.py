@@ -37,7 +37,7 @@ class TeleViewer(DefaultViewer):
             states={'username_key':
                     [MessageHandler(Filters.text, self.username_key, pass_chat_data=True)],
                     'password_key':
-                    [MessageHandler(Filters.text, self.password_key, pass_chat_data=True)]}
+                    [MessageHandler(Filters.text, self.password_key, pass_chat_data=True)]},
             fallbacks=[CommandHandler('cancel', ConversationHandler.END)]))
         handlers.append(CommandHandler('predict', self.cmd_predict))
         handlers.append(CommandHandler('start', self.cmd_start))

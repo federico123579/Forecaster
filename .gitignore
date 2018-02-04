@@ -27,6 +27,8 @@ wheels/
 *.lock
 .ipynb*
 *.h5
+data.yml
+*.log.*
 
 # Installer logs
 pip-log.txt

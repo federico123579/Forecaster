@@ -28,18 +28,20 @@ class Model(Subject, Observer):
 
     def start(self):
         try:
-            self.forex.init_creds()
-            self.forex.init_model(10)
-        except MissingConfig:
-            self.notify_observers('config')
+            self.forex.init_model()
         except MissingModel:
-            train(10)
-            self.forex.init_model(10)
+            train()
+            self.forex.init_model()
 
     def pred_all(self):
         logger.debug("predicting")
         predictions = {}
         for curr in CURR:
-            predictions[curr] = self.forex.predict(curr, 10)
+            predictions[curr] = self.forex.predict(curr)
         logger.debug("predicted all currencies")
         return predictions
+
+    # handle all events
+    def notify(self, observable, event, **kwargs):
+        logger.debug("Model notified - %s" % event)
+        self.notify_observers(event, **kwargs)
