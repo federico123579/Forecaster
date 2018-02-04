@@ -12,7 +12,7 @@ from telegram import Bot
 from telegram.ext import Updater, CommandHandler, ConversationHandler, MessageHandler
 from telegram.ext.filters import Filters
 from forecaster.glob import CURR
-from forecaster.view.glob import OmniViewer, DefaultViewer
+from forecaster.core.view.glob import OmniViewer, DefaultViewer
 
 # logging
 import logging

@@ -9,10 +9,10 @@ This module provides the main model component of the pattern MVC.
 
 from forecaster.glob import CURR
 from forecaster.patterns import Subject, Observer
-from forecaster.model.forex import ForexPredict
-from forecaster.model.train import train
+from forecaster.core.model.forex import ForexPredict
+from forecaster.core.model.train import train
 from forecaster.exceptions import *
-from forecaster.model.exceptions import *
+from forecaster.core.model.exceptions import *
 
 # logging
 import logging

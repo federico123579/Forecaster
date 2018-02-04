@@ -17,9 +17,9 @@ import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from keras.models import load_model
 from forecaster.glob import CURR
-from forecaster.model.glob import *
+from forecaster.core.model.glob import *
 from forecaster.exceptions import *
-from forecaster.model.exceptions import *
+from forecaster.core.model.exceptions import *
 
 # logging
 import logging

@@ -8,7 +8,7 @@ This module provides the main view component of the model MVC.
 """
 
 from forecaster.patterns import Subject, Observer
-from forecaster.view.tele import TeleViewer
+from forecaster.core.view.tele import TeleViewer
 
 # logging
 import logging

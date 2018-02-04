@@ -8,9 +8,9 @@ This module provides the main controller component of the model MVC.
 """
 
 from forecaster.patterns import Subject, Observer
-from forecaster.controller.tradingapi import ClientController
-from forecaster.model import Model
-from forecaster.view import View
+from forecaster.core.controller.tradingapi import ClientController
+from forecaster.core.model import Model
+from forecaster.core.view import View
 
 # logging
 import logging

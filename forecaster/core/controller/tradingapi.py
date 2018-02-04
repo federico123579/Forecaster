@@ -9,7 +9,7 @@ This module provides the the controller for API.
 """
 
 from trading212api import Client
-from forecaster.controller.glob import OmniController, DefaultController
+from forecaster.core.controller.glob import OmniController, DefaultController
 from forecaster.exceptions import MissingConfig
 
 # logging
