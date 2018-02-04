@@ -14,6 +14,8 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 from keras.models import Sequential
 from keras.layers import Dense, Activation, LSTM
+from forecaster.glob import get_path
+
 # logging
 import logging
 logger = logging.getLogger('forecaster.model.train')
@@ -138,8 +140,7 @@ def train(epochs=10):
     y_train, y_test = split(labels, -1)
     mod.fit(x_train, y_train, epochs=epochs, batch_size=64)
     logger.debug("fit")
-    path = os.path.join(os.path.dirname(
-        os.path.dirname(os.path.abspath(__file__))), 'data', 'model.h5')
+    path = get_path('model.h5')
     mod.save(path)
     logger.debug("saved model")
 

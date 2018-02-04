@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from keras.models import load_model
-from forecaster.glob import CURR
+from forecaster.glob import CURR, get_path
 from forecaster.core.model.glob import *
 from forecaster.exceptions import *
 from forecaster.core.model.exceptions import *
@@ -35,7 +35,7 @@ class ForexPredict(DefaultModel):
 
     def init_model(self):
         """load model"""
-        path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data', 'model.h5')
+        path = get_path('model.h5')
         if not os.path.isfile(path):
             raise MissingModel()
         self.model = load_model(path)
