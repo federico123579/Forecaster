@@ -7,16 +7,13 @@ forecaster.core.model.forex
 This module provides the model for predictiong forex trends.
 """
 
-# TODO:
-# - fix tele.py
-
 import time
 import os.path
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import MinMaxScaler
 from keras.models import load_model
 from forecaster.glob import CURR, get_path
+from forecaster.core.model.utils import *
 from forecaster.core.model.glob import *
 from forecaster.exceptions import *
 from forecaster.core.model.exceptions import *
@@ -61,25 +58,11 @@ class ForexPredict(DefaultModel):
             candles.append([op, mx, mn, cl])
         candles = np.array(candles)  # convert in a numpy array
         # get smas
-        smas = np.array([self._get_sma(x, 14) for x in self._group(
+        smas = np.array([sma(x, 14) for x in group(
             candles.transpose()[3], 14)][-10:])
         values = np.c_[candles[-10:], smas[:, None]]  # combine with smas
-        self.curr[curr]['feed'] = self._scale(values)  # set values to feed
+        self.curr[curr]['feed'] = scale(values)  # set values to feed
         logger.debug("updated values")
-
-    def _group(self, values, hours):
-        data_grouped = []
-        for i in range(len(values)-hours):
-            data_grouped.append(values[i:i+hours])
-        return np.array(data_grouped)
-
-    def _scale(self, arr):
-        scaler = MinMaxScaler(feature_range=(-1, 1))
-        scaler.fit(arr)
-        return np.array(scaler.transform(arr))
-
-    def _get_sma(self, values, periods):
-        return sum(values)/periods
 
     def _init_currencies(self):
         """init currencies in dict curr"""
