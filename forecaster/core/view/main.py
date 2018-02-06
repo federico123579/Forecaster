@@ -34,6 +34,16 @@ class View(Subject, Observer):
     def prediction(self, pred_dict):
         self.tele.out_pred(pred_dict)
 
+    def new_pos(self, name, margin):
+        self.tele.new_pos(name, margin)
+
+    def close_pos(self, result):
+        self.tele.close_pos(result)
+
+    def renew(self):
+        """renew connection"""
+        self.tele.renew_connection()
+
     # handle all events
     def notify(self, observable, event):
         logger.debug("View notified - %s" % event)

@@ -11,6 +11,7 @@ The bot.
 import sys
 import time
 from forecaster.core.controller import UltraController
+from forecaster.automatism.automata import Automata
 
 # logging
 import logging
@@ -20,6 +21,14 @@ logger = logging.getLogger('forecaster')
 class Bot(UltraController):
     def __init__(self):
         super().__init__()
+
+    def start_automatism(self):  # OPTIMIZE
+        self.auto = Automata(self)
+        self.auto.start()
+
+    def off(self):
+        self.stop()
+        self.auto.stop()
 
 
 # main function
@@ -33,7 +42,7 @@ def main():
             time.sleep(1)
     except KeyboardInterrupt:
         sys.stderr.write('\r' + "exiting...\n")
-        bot.stop()
+        bot.off()
         logger.debug("exited")
 
 

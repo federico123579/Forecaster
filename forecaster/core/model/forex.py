@@ -42,7 +42,7 @@ class ForexPredict(DefaultModel):
 
     def predict(self, curr):
         self.update(curr)
-        prediction = self.model.predict(np.expand_dims(self.curr[curr]['feed'], axis=0))
+        prediction = self.model.predict(np.array([self.curr[curr]['feed']]))
         logger.debug("predicted")
         return prediction[0]
 
@@ -83,10 +83,10 @@ class ForexPredict(DefaultModel):
 
     def _init_currencies(self):
         """init currencies in dict curr"""
-        for cur in CURR:
-            if not self.curr.get(cur):
-                self.curr[cur] = {}
-                self.curr[cur]['feed'] = []
+        for curr in CURR:
+            if not self.curr.get(curr):
+                self.curr[curr] = {}
+                self.curr[curr]['feed'] = []
 
     def _check_curr(self, curr):
         if curr not in CURR:

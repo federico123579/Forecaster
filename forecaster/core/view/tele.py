@@ -13,6 +13,7 @@ from telegram.ext import Updater, CommandHandler, ConversationHandler, MessageHa
 from telegram.ext.filters import Filters
 from forecaster.glob import CURR
 from forecaster.core.view.glob import OmniViewer, DefaultViewer
+from telegram.error import TimedOut
 
 # logging
 import logging
@@ -101,10 +102,29 @@ class TeleViewer(DefaultViewer):
         logger.debug("prediction processed")
         text = "Prediction:"
         text += "\nTiming: 10 hours"
-        for curr in CURR:
-            text += '\n_%s_ - *%.3f*' % (curr, pred_dict[curr])
+        for curr in pred_dict:
+            text += '\n_%s_ - *%.3f*' % (curr['name'], curr['value'])
         self.bot.send_message(chat_id=self.chat_id, text=text,
                               parse_mode=telegram.ParseMode.MARKDOWN)
+
+    def new_pos(self, name, margin):
+        logger.debug("new_position telegram")
+        text = "Opened position *%s*\nMargin: *%.2f*" % (name, margin)
+        self.bot.send_message(chat_id=self.chat_id, text=text,
+                              parse_mode=telegram.ParseMode.MARKDOWN)
+
+    def close_pos(self, result):
+        logger.debug("close_position telegram")
+        text = "Closed position with gain of *%.2f*" % result
+        self.bot.send_message(chat_id=self.chat_id, text=text,
+                              parse_mode=telegram.ParseMode.MARKDOWN)
+
+    def renew_connection(self):
+        try:
+            self.bot.getChat(chat_id=self.chat_id, timeout=5)  # get chat info to renew connection
+        except TimedOut as e:
+            logger.error("Telegram timed out, renewing")
+        logger.debug("renewed connection")
 
 
 # # Create a button menu to show in Telegram messages

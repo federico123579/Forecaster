@@ -35,9 +35,9 @@ class Model(Subject, Observer):
 
     def pred_all(self):
         logger.debug("predicting")
-        predictions = {}
-        for curr in CURR:
-            predictions[curr] = self.forex.predict(curr)
+        predictions = []
+        for curr in CURR:  # add name and value key
+            predictions.append({'name': curr, 'value': self.forex.predict(curr)})
         logger.debug("predicted all currencies")
         return predictions
 
