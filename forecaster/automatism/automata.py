@@ -119,7 +119,8 @@ class Automata(Subject):
         if not self.OPEN.is_set():
             logger.debug("OPEN passed")
             return
-        for position in self.handler.client.account.positions:
+        poss = [pos for pos in self.handler.client.account.positions]  # get poss
+        for position in poss:  # iterate in position not in account
             self.handler.client.close_position(position.id)
             self.notify_observers(event="close", data={'res': position.result})
             logger.info("position %s closed" % position.id)
