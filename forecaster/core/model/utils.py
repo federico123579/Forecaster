@@ -30,3 +30,24 @@ def scale(values):
 
 def sma(values, periods):
     return sum(values)/periods
+
+
+def rsi(values, period):
+    rsi = []
+    for i in range(len(values)-period):
+        gains = 0.0
+        losses = 0.0
+        window = values[i:i+period+1]
+        for year_one, year_two in zip(window, window[1:]):
+            diff = year_two - year_one
+
+            if diff > 0:
+                gains += diff
+            else:
+                losses += abs(diff)
+        # Check if `losses` is zero. If so, `100/(1 + RS)` will practically be 0.
+        if not losses:
+            rsi.append(100.00)
+        else:
+            rsi.append(round(100 - (100 / (1 + gains / losses)), 2))
+    return rsi

@@ -10,7 +10,7 @@ This module provides the main model component of the pattern MVC.
 from forecaster.glob import CURR
 from forecaster.patterns import Subject, Observer
 from forecaster.core.model.forex import ForexPredict
-from forecaster.core.model.train import train
+from forecaster.core.model.predicters.sma_ten_hours import SmaTenHours
 from forecaster.exceptions import *
 from forecaster.core.model.exceptions import *
 
@@ -30,7 +30,7 @@ class Model(Subject, Observer):
         try:
             self.forex.init_model()
         except MissingModel:
-            train()
+            SmaTenHours().trainer.train()
             self.forex.init_model()
 
     def pred_all(self):

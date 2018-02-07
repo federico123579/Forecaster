@@ -12,6 +12,7 @@ from forecaster.core.controller.glob import OmniController
 from forecaster.core.controller.tradingapi import ClientController
 from forecaster.core.model import Model
 from forecaster.core.view import View
+from forecaster.exceptions import *
 
 # logging
 import logging
@@ -47,9 +48,13 @@ class UltraController(Observer):
     def notify(self, observable, event, **kwargs):
         logger.debug("Controller notified - %s" % event)
         if event == 'start-bot':
-            self.model.start()
-            self.controller.start_bot()
-            self.start_automatism()
+            try:
+                self.model.start()
+                self.controller.start_bot()
+                self.start_automatism()
+            except Exception as e:
+                logger.exception(e)
+                raise
         elif event == 'stop-bot':
             self.controller.stop_bot()
         elif event == 'config':
@@ -69,7 +74,7 @@ class Controller(Subject, Observer):
     """control all controllers"""
     def __init__(self):
         super().__init__()
-        self.client = ClientController('demo')
+        self.client = ClientController('live')
 
     def start_bot(self):
         try:  # try to log in
