@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-forecaster.model.exceptions
+forecaster.core.model.exceptions
 ~~~~~~~~~~~~~~
 
 This module provides exceptions for model.

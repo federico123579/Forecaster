@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-forecaster.view.glob
+forecaster.core.view.glob
 ~~~~~~~~~~~~~~
 
 This module provides glob access.

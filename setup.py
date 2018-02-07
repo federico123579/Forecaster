@@ -27,7 +27,7 @@ setup(
     url="https://github.com/federico123579/forecaster",
     entry_points={
         'console_scripts': [
-            'forecaster = forecaster.test:main'
+            'forecaster = forecaster.bot:main'
         ]
     },
     classifiers=[

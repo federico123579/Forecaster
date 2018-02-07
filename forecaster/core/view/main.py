@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
 """
-forecaster.view.main
+forecaster.core.view.main
 ~~~~~~~~~~~~~~
 
 This module provides the main view component of the model MVC.
 """
 
 from forecaster.patterns import Subject, Observer
-from forecaster.view.tele import TeleViewer
+from forecaster.core.view.tele import TeleViewer
 
 # logging
 import logging
@@ -33,6 +33,16 @@ class View(Subject, Observer):
 
     def prediction(self, pred_dict):
         self.tele.out_pred(pred_dict)
+
+    def new_pos(self, name, margin):
+        self.tele.new_pos(name, margin)
+
+    def close_pos(self, result):
+        self.tele.close_pos(result)
+
+    def renew(self):
+        """renew connection"""
+        self.tele.renew_connection()
 
     # handle all events
     def notify(self, observable, event):

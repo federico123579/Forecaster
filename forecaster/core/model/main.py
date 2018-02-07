@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-forecaster.model.main
+forecaster.core.model.main
 ~~~~~~~~~~~~~~
 
 This module provides the main model component of the pattern MVC.
@@ -9,10 +9,10 @@ This module provides the main model component of the pattern MVC.
 
 from forecaster.glob import CURR
 from forecaster.patterns import Subject, Observer
-from forecaster.model.forex import ForexPredict
-from forecaster.model.train import train
+from forecaster.core.model.forex import ForexPredict
+from forecaster.core.model.train import train
 from forecaster.exceptions import *
-from forecaster.model.exceptions import *
+from forecaster.core.model.exceptions import *
 
 # logging
 import logging
@@ -35,9 +35,9 @@ class Model(Subject, Observer):
 
     def pred_all(self):
         logger.debug("predicting")
-        predictions = {}
-        for curr in CURR:
-            predictions[curr] = self.forex.predict(curr)
+        predictions = []
+        for curr in CURR:  # add name and value key
+            predictions.append({'name': curr, 'value': self.forex.predict(curr)})
         logger.debug("predicted all currencies")
         return predictions
 
