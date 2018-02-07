@@ -13,7 +13,6 @@ import pandas as pd
 import numpy as np
 from keras.models import Sequential
 from keras.layers import Dense, Activation, LSTM
-from forecaster.core.model.utils import *
 from forecaster.glob import get_path
 
 # logging
@@ -118,7 +117,6 @@ def train():
     y_train, y_test = split(labels, -1)
     mod.fit(x_train, y_train, epochs=10, batch_size=64)
     logger.debug("fit")
-    predict(x_test, y_test, mod.predict(x_test))
     path = get_path('model.h5')
     mod.save(path)
     logger.debug("saved model")

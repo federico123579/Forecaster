@@ -60,27 +60,30 @@ class Automata(Subject):
     def keep_open(self):
         """keep open session"""
         while self.ACTIVE.is_set():
-            try:
-                username = self.omni().pers_data['username']
-                password = self.omni().pers_data['password']
-            except KeyError:
-                raise MissingConfig
-            try:  # catch unathorized access
-                self.handler.client.login(username, password)
-            except RequestError as e:
-                if e.status != 401:
-                    raise
-            self.ultra.view.renew()  # renew connection
+            self.renew_sess()
             logger.debug("keep session live")
             self._sleep(60*10, self.ACTIVE)
 
+    def renew_sess(self):
+        try:
+            username = self.omni().pers_data['username']
+            password = self.omni().pers_data['password']
+        except KeyError:
+            raise MissingConfig
+        try:  # catch unathorized access
+            self.handler.client.login(username, password)
+        except RequestError as e:
+            if e.status != 401:
+                raise
+        self.ultra.view.renew()  # renew connection
+
     def work(self):
         """main cycle"""
-        self._sleep(self.handler.time_left_to_update(), self.ACTIVE)  # first launch
+        self._wait_to_renew(self.handler.time_left_to_update())  # first launch
         while self.ACTIVE.is_set():
             self.work_open()
             time_left = self.handler.time_left_to_update()
-            self._sleep(time_left, self.ACTIVE)
+            self._wait_to_renew(time_left)
             self.work_close()
 
     def work_open(self):
@@ -88,19 +91,20 @@ class Automata(Subject):
         logger.debug("working open")
         predictions = self.model.pred_all()  # get the predictions
         margin_risk = self.conf.config['margin-risk']
+        max_trans = self.conf.config['max-concurrent-trans']
         approved = []  # init approved
         for prediction in predictions:
             mode = self.check(prediction['value'])  # get the mode
-            if mode is None:  # if check not respected ignore it
-                continue
-            else:  # append to approved
+            if mode is not None and len(approved) < max_trans:  # append to approved
                 approved.append([prediction, mode])
+            else:  # ignore it
+                continue
         self.handler.client.refresh()
         free_funds = self.handler.client.account.funds['free']
         margin_per_pred = margin_risk*free_funds/len(approved)
         for prediction in approved:
-            mode = prediction[1]
             prod = prediction[0]['name']+'_ZERO'
+            mode = prediction[1]
             # make an auto transaction, quantity will be calculated in handler (ZERO SPREAD)
             try:
                 res = self.handler.transaction(mode, prod, margin_per_pred)
@@ -135,6 +139,11 @@ class Automata(Subject):
             return 'sell'
         else:
             return None
+
+    def _wait_to_renew(self, t):
+        """combination of sleep and renew"""
+        self._sleep(t, self.ACTIVE)
+        self.renew_sess()
 
     def _sleep(self, t, event):
         """sleep check"""

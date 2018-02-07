@@ -13,7 +13,6 @@ import numpy as np
 import pandas as pd
 from keras.models import load_model
 from forecaster.glob import CURR, get_path
-from forecaster.core.model.utils import *
 from forecaster.core.model.glob import *
 from forecaster.exceptions import *
 from forecaster.core.model.exceptions import *
