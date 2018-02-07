@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 
 """
-forecaster.controller.main
+forecaster.core.controller.main
 ~~~~~~~~~~~~~~
 
 This module provides the main controller component of the model MVC.
 """
 
 from forecaster.patterns import Subject, Observer
-from forecaster.controller.tradingapi import ClientController
-from forecaster.model import Model
-from forecaster.view import View
+from forecaster.core.controller.glob import OmniController
+from forecaster.core.controller.tradingapi import ClientController
+from forecaster.core.model import Model
+from forecaster.core.view import View
 
 # logging
 import logging
@@ -21,6 +22,7 @@ logger = logging.getLogger('forecaster.controller')
 class UltraController(Observer):
     """control views and models"""
     def __init__(self):
+        self.omni = OmniController
         self.model = Model()  # init model
         self.register_obs(self.model)
         self.controller = Controller()  # init controller
@@ -31,8 +33,15 @@ class UltraController(Observer):
     def start(self):
         self.view.start()  # listen commands
 
+    def start_automatism(self):
+        logger.error("automatism not implemented")
+
     def stop(self):
         self.view.stop()  # stop the updater
+
+    def _set_hist_data(self, name, limit):
+        """set hist data in model"""
+        self.model.forex.hist = self.controller.hist_data(name, limit)
 
     # handle all events
     def notify(self, observable, event, **kwargs):
@@ -40,15 +49,19 @@ class UltraController(Observer):
         if event == 'start-bot':
             self.model.start()
             self.controller.start_bot()
+            self.start_automatism()
         elif event == 'stop-bot':
             self.controller.stop_bot()
         elif event == 'config':
             self.view.configurate()
         elif event == 'historical_data':  # get hist candles with amount
-            self.model.forex.hist = self.controller.hist_data(  # OPTIMIZE
-                kwargs['data']['name'], kwargs['data']['limit'])
+            self._set_hist_data(kwargs['data']['name'], kwargs['data']['limit'])
         elif event == 'predict':
             self.view.prediction(self.model.pred_all())
+        elif event == 'open':
+            self.view.new_pos(kwargs['data']['name'], kwargs['data']['margin'])
+        elif event == 'close':
+            self.view.close_pos(kwargs['data']['res'])
 
 
 # define a general controller
@@ -56,7 +69,7 @@ class Controller(Subject, Observer):
     """control all controllers"""
     def __init__(self):
         super().__init__()
-        self.client = ClientController('demo')
+        self.client = ClientController('live')
 
     def start_bot(self):
         try:  # try to log in
