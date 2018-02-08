@@ -74,7 +74,7 @@ class Controller(Subject, Observer):
     """control all controllers"""
     def __init__(self):
         super().__init__()
-        self.client = ClientController('live')
+        self.client = ClientController('demo')
 
     def start_bot(self):
         try:  # try to log in
