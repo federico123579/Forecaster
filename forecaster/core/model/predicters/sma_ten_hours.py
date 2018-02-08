@@ -18,12 +18,13 @@ from forecaster.glob import get_path
 
 # logging
 import logging
-logger = logging.getLogger('forecaster.model.train')
+logger = logging.getLogger('forecaster.model.sma_ten_hours')
 
 
 class SmaTenHours(object):
     def __init__(self):
-        self.trainer = Trainer()
+        self.load_model()
+        self.trainer = Trainer(self.model)
 
     def load_model(self):
         path = get_path('model.h5')
@@ -34,8 +35,8 @@ class SmaTenHours(object):
 
 
 class Trainer(object):
-    def __init__(self):
-        pass  # TODO
+    def __init__(self, model):
+        self.model = model
 
     def prepare_data(self, raw_data, grouped=False):
         data = np.array(raw_data)

@@ -89,4 +89,4 @@ class Controller(Subject, Observer):
 
     def hist_data(self, name, amount):
         """get historical data"""
-        return self.client.client.get_historical_data(name, amount, '1h')
+        return self.client.client.get_historical_data(name, amount, '1m')

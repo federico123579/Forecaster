@@ -47,6 +47,7 @@ class TeleViewer(DefaultViewer):
         for hand in handlers:
             self.dispatcher.add_handler(hand)
         self.updater.start_polling()  # listen connections
+        logger.debug("Telegram listening")
 
     def cmd_start(self, bot, update):
         logger.debug("start command caught")

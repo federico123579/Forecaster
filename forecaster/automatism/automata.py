@@ -53,7 +53,7 @@ class Automata(Subject):
         logger.debug("automata stopped")
 
     def start_cycle(self):
-        Thread(target=self.keep_open).start()
+        # Thread(target=self.keep_open).start()
         Thread(target=self.work).start()
         logger.debug("cycles started")
 

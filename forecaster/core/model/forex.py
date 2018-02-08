@@ -52,7 +52,8 @@ class ForexPredict(DefaultModel):
             mn = candle['bid']['low']
             cl = candle['bid']['close']
             candles.append([op, mx, mn, cl])
-        data = self.models['TenHours'].trainer.prepare_data(np.array(candles))[0]  # prepare data
+        # prepare data
+        data = self.models['TenHours'].trainer.prepare_data(np.array(candles.reverse()))[0]
         self.curr[curr]['feed'] = data  # set values to feed
         logger.debug("updated values")
 

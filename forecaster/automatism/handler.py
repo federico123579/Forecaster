@@ -25,8 +25,8 @@ class Handler(object):
         """get time left to update of hist data"""
         hist = self.controller.hist_data('EURUSD', 1)  # check EURUSD for convention
         last_time = int(str(hist[0]['timestamp'])[:-3])  # remove post comma superflous zeros
-        time_left = (60-(time.time()-last_time)/60)*60
-        logger.debug("time left (in minutes): %f" % (time_left/60))
+        time_left = 60-(time.time()-last_time)
+        logger.debug("time left (in secondes): %f" % (time_left))
         return time_left
 
     def transaction(self, mode, name, margin):
