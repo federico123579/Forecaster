@@ -5,9 +5,9 @@ Un software progettato per prevedere l'andamento di valute **forex** nell'arco d
 ## Developing
 
 Verranno utilizzati diversi _Design Patterns_:
-- creational: **```singleton```**, **```builder```**
-- structural: **```mvc```**, **```composite```**
-- behavioral: **```observer```**, **```strategy```**
+- creational: _da definirsi_
+- structural: _da definirsi_
+- behavioral: _da definirsi_
 
 ### Main Libraries
 

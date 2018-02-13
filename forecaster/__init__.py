@@ -1,5 +1,5 @@
-import os.path
 import logging.config
+import os.path
 
 __AUTHOR__ = "Federico Lolli"
 __VERSION__ = "v0.1a0"
