@@ -4,7 +4,7 @@ from forecaster import __VERSION__
 
 setup(
     name="forecaster",
-    version="__VERSION__",
+    version=__VERSION__,
     packages=find_packages(),
     install_requires=[
         # 'pandas',
