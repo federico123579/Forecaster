@@ -6,11 +6,12 @@ forecaster.predict.tools
 
 Collection of tools need to calculate indexes.
 """
-
 import numpy as np
+import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 
 
+# ~~{ FINANCIAL INDICATORS }~~
 def sma(values, periods):
     """Simple Moving Average"""
     return sum(values) / periods
@@ -60,3 +61,21 @@ def scale(values):
     scaler = MinMaxScaler(feature_range=(-1, 1))
     scaler.fit(values)
     return np.array(scaler.transform(values))
+
+
+# ~~{ GET DATA }~~
+def data_fxhistorical(symbol, pars, item_count, timeframe):
+    """get data from url"""
+    URL = ('http://api.fxhistoricaldata.com/indicators' +
+           '?instruments=%s' +
+           '&expression=%s' +
+           '&item_count=%s' +
+           '&format=csv&timeframe=%s')
+    expression = ','.join(pars)
+    url = URL % (symbol, expression, item_count, timeframe)
+    raw_data = pd.read_csv(url)  # read csv from url
+    columns = ['curr', 'datetime']
+    columns.extend(pars)
+    raw_data.columns = columns
+    del raw_data.curr, raw_data.datetime  # drop useless columns
+    return raw_data.iloc[::-1]  # return data reversed

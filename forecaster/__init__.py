@@ -1,6 +1,8 @@
 import logging.config
 import os.path
 
+from .bot import Bot
+
 __AUTHOR__ = "Federico Lolli"
 __VERSION__ = "v0.1a0"
 

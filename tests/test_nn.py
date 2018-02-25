@@ -1,11 +1,11 @@
 import logging
 
-from forecaster.predict.neural import NeuralNetwork
+from forecaster.predict.neural import NeuralPredicter
 
 
 def main():
     logging.getLogger('forecaster').setLevel(logging.DEBUG)
-    NN = NeuralNetwork('10_day')
+    NN = NeuralPredicter('tests/10_day')
     NN.train()
 
 

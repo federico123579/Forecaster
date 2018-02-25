@@ -1,0 +1,12 @@
+# HANDLER
+handler:
+  mode: demo
+
+# TELEGRAM
+mediator: None
+
+# MEAN REVERSION
+predicter:
+  multiplier:  2
+  timeframe:   day
+  count:       5

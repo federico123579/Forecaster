@@ -10,7 +10,6 @@ Use a strategy pattern to work with a yml file.
 
 import logging
 
-import pandas as pd
 from keras.layers import LSTM, Activation, Dense, Dropout
 from keras.models import Sequential, load_model
 from keras.optimizers import Adam
@@ -21,7 +20,7 @@ from forecaster.utils import get_path, read_yml
 logger = logging.getLogger('forecaster.predict.neural')
 
 
-class NeuralNetwork(object):
+class NeuralPredicter(object):
     """feed with strategy"""
 
     def __init__(self, strategy_name):
@@ -32,7 +31,7 @@ class NeuralNetwork(object):
             'sma': self._sma_values,
             'rsi': self._rsi_values,
             'stochastic_oscillator': self._stochastic_values}
-        logger.debug("NeuralNetwork initied with %s" % strategy_name)
+        logger.debug("NeuralPredicter initied with %s" % strategy_name)
 
     def train(self):
         data, labels = self.get_data()
@@ -62,7 +61,7 @@ class NeuralNetwork(object):
                 check_list += 1
             elif abs(predicted[x] - actual[x]) > risk_range:
                 check_list += 0
-        return check_list/len(predicted)
+        return check_list / len(predicted)
 
     def make_nn(self, shape):
         """make neural network"""
@@ -172,17 +171,6 @@ class NeuralNetwork(object):
         return dataframe.drop(pars_to_delete, axis=1)
 
     def _get_raw_data_from_url(self, pars):
-        """get data from url"""
-        URL = ('http://api.fxhistoricaldata.com/indicators' +
-               '?instruments=EURUSD' +
-               '&expression=%s' +
-               '&item_count=%s' +
-               '&format=csv&timeframe=%s')
-        expression = ','.join(pars)
-        url = URL % (expression, self.strategy['item_count'], self.strategy['timeframe'])
-        raw_data = pd.read_csv(url)  # read csv from url
-        columns = ['Currency', 'Datetime']
-        columns.extend(pars)
-        raw_data.columns = columns
-        raw_data = raw_data.drop(['Currency', 'Datetime'], axis=1)  # drop useless columns
-        return raw_data.iloc[::-1]  # return data reversed
+        item_count = self.strategy['item_count']
+        timeframe = self.strategy['timeframe']
+        return data_fxhistorical('EURUSD', pars, item_count, timeframe)

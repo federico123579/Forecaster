@@ -1,4 +1,5 @@
 # training neural network
+# need predicter NEURAL
 item_count:    5000
 train_test:    0.1
 epochs:        100
