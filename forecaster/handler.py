@@ -28,6 +28,7 @@ class Client(metaclass=Singleton):
         logger.debug("handler initied")
 
     def handle_request(self, event):
+        """pattern function"""
         self.pass_request(event)
 
     def start(self):
@@ -41,14 +42,20 @@ class Client(metaclass=Singleton):
             logger.error("Invalid credentials with %s" % e.username)
             self.set_state('MISSING_DATA')
             self.handle_request(EVENTS.MISSING_DATA)
-        logger.debug("hanlder started")
+        logger.debug("handler started")
+
+    def get_last_closes(self, symbol, num, timeframe):
+        candles = self.api.get_historical_data(symbol, num, timeframe)
+        closes = [candle['bid']['close'] for candle in candles]
+        return closes
 
     def set_state(self, state):
-        """log state"""
+        """pattern function"""
         self.state = STATES[state]
         logger.debug("%s state: %s" % (self.__class__.__name__, STATES[state].name))
 
     def pass_request(self, request, **kwargs):
+        """pattern function"""
         logger.debug("caught request: %s" % request)
         if self._successor is not None:
             self._successor.handle_request(request)

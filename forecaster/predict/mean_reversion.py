@@ -27,9 +27,9 @@ class MeanReversionPredicter(object):
     def predict(self, day_closes):
         """predict if is it worth"""
         # linear least-squared regression
-        moving_average = stats.linregress(len(day_closes), day_closes)
+        moving_average = stats.linregress(range(1, len(day_closes)+1), day_closes)[1]
         moving_dev = np.std(day_closes)  # standard deviation
-        band = moving_average + self.mult * moving_average  # calculate Bolliger Band
+        band = moving_average + self.mult * moving_dev  # calculate Bolliger Band
         close = day_closes[-1]
         if close > band:
             logger.debug("above bolliger band")

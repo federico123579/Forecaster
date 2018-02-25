@@ -8,5 +8,5 @@ mediator: None
 # MEAN REVERSION
 predicter:
   multiplier:  2
-  timeframe:   day
+  timeframe:   1d
   count:       5
