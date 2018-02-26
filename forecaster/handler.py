@@ -48,13 +48,11 @@ class Client(metaclass=Singleton):
         self.api.refresh()
         poss = [pos for pos in self.api.positions if pos.instrument == symbol]
         if mode == ACTIONS.BUY:
-            quantity = self._fix_quantity(poss, quantity, 'sell')
-            if quantity > 0:
-                self._open_pos(symbol, 'buy', quantity)
+            self._fix_trend(poss, 'sell')
+            self._open_pos(symbol, 'buy', quantity)
         elif mode == ACTIONS.SELL:
-            quantity = self._fix_quantity(poss, quantity, 'buy')
-            if quantity > 0:
-                self._open_pos(symbol, 'sell', quantity)
+            self._fix_trend(poss, 'buy')
+            self._open_pos(symbol, 'sell', quantity)
 
     def _open_pos(self, symbol, mode, quantity):
         STATE = False
@@ -69,17 +67,13 @@ class Client(metaclass=Singleton):
                 break
         self.handle_request(EVENTS.OPENED_POS, data={'symbol': symbol, 'mode': mode})
 
-    def _fix_quantity(self, poss, quantity, mode):
+    def _fix_trend(self, poss, mode):
         pos_left = [x for x in poss if x.mode == mode]  # get position of mode
         if pos_left:  # if existent
             for pos in pos_left:  # iterate over
                 self.api.close_position(pos.id)  # close
                 self.RESULTS += pos.result  # update returns
                 self.handle_request(EVENTS.CLOSED_POS, data={'pos': pos})
-                quantity -= pos.quantity  # update quantity
-                if quantity <= 0:  # if above quantity needed
-                    break
-        return quantity
 
     def get_last_closes(self, symbol, num, timeframe):
         candles = self.api.get_historical_data(symbol, num, timeframe)

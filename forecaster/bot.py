@@ -53,6 +53,7 @@ class Bot(StaterChainer):
         logger.debug("bot listening")
 
     def stop(self):
+        self.automate.stop()
         self.mediate.stop()
         self.set_state('POWERED_OFF')
 

@@ -54,11 +54,10 @@ class Automaton(StaterChainer):
                 self.renew_sess()  # renovate session
                 tran.complete()
                 logger.debug("transaction completed")
-            self._wait(self.strategy['time_to_sleep'] - start, self.LOOP)  # wait five minutes
+            self._wait(self.strategy['time_to_sleep'] - (time.time() - start), self.LOOP)
 
     def renew_sess(self):
         Client().start()  # re-login
-        self.mediator.Telegram.renew_connection()
 
     def _time_left(self):
         """get time left to update of hist data"""
