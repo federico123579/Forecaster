@@ -38,9 +38,6 @@ class Bot(StaterChainer):
             self.stop_bot()
         elif event == EVENTS.MISSING_DATA:
             self.mediate.need_conf()
-        elif event == EVENTS.OPENED_POS:
-            data = kw['data']
-            self.mediate.Telegram.open_pos(data['symbol'], data['mode'])
         elif event == EVENTS.CLOSED_POS:
             pos = kw['data']['pos']
             self.mediate.Telegram.close_pos(pos.result)

@@ -8,13 +8,13 @@ mediator:             None
 # MEAN REVERSION
 predicter:
   multiplier:         2
-  timeframe:          5m
-  absolute-timeframe: 300
+  timeframe:          1h
+  absolute-timeframe: 3600
   count:              5
 
 # AUTOMATON
 automaton:
-  time_to_sleep:      300
+  time_to_sleep:      3600
   fixed-quantity:     5000
   currencies:
     - EURUSD_ZERO

@@ -65,7 +65,6 @@ class Client(metaclass=Singleton):
             except trading212api.exceptions.MaxQuantityExceeded as e:
                 logger.warning("Maximum quantity exceeded")
                 break
-        self.handle_request(EVENTS.OPENED_POS, data={'symbol': symbol, 'mode': mode})
 
     def _fix_trend(self, poss, mode):
         pos_left = [x for x in poss if x.mode == mode]  # get position of mode
