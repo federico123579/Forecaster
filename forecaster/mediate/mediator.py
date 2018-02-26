@@ -18,7 +18,7 @@ logger = logging.getLogger('forecaster.mediate.mediator')
 class Mediator(StaterChainer):
     """main mediator"""
 
-    def __init__(self, strat, successor=None):
+    def __init__(self, strat, successor):
         super().__init__(successor)
         self.strategy = read_strategy(strat)['mediator']
         self.security = read_strategy('security')

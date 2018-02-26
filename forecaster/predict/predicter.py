@@ -4,7 +4,7 @@
 forecaster.predict.predicter
 ~~~~~~~~~~~~~~
 
-Facade class to predict working with big data and NNs.
+Facade class to predict working with algorithms.
 """
 
 import logging
@@ -26,7 +26,7 @@ class Predicter(object):
         self.MeanReversion = MeanReversionPredicter(self.strategy['multiplier'])
         logger.debug("predicter initied")
 
-    def predict(self):
-        closes = Client().get_last_closes('EURUSD', self.interval, self.timeframe)
+    def predict(self, symbol):
+        closes = Client().get_last_closes(symbol, self.interval, self.timeframe)
         prediction = self.MeanReversion.predict(closes)
-        logger.info(prediction)
+        return prediction

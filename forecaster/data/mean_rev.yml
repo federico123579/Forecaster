@@ -1,12 +1,24 @@
 # HANDLER
 handler:
-  mode: demo
+  mode:               demo
 
 # TELEGRAM
-mediator: None
+mediator:             None
 
 # MEAN REVERSION
 predicter:
-  multiplier:  2
-  timeframe:   1d
-  count:       5
+  multiplier:         2
+  timeframe:          1h
+  absolute-timeframe: 3600
+  count:              5
+
+# AUTOMATON
+automaton:
+  time_to_sleep:      3600
+  fixed-quantity:     5000
+  currencies:
+    - EURUSD_ZERO
+    - USDJPY_ZERO
+    - USDCHF_ZERO
+    - GBPUSD_ZERO
+    - USDCAD_ZERO

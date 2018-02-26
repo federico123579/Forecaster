@@ -10,7 +10,7 @@ import logging
 
 import trading212api
 from forecaster.exceptions import MissingData
-from forecaster.utils import EVENTS, STATES, Singleton, read_strategy
+from forecaster.utils import ACTIONS, EVENTS, STATES, Singleton, read_strategy
 
 logger = logging.getLogger('forecaster.handler')
 
@@ -27,9 +27,9 @@ class Client(metaclass=Singleton):
         self.set_state('READY')
         logger.debug("handler initied")
 
-    def handle_request(self, event):
+    def handle_request(self, event, **kw):
         """pattern function"""
-        self.pass_request(event)
+        self.pass_request(event, **kw)
 
     def start(self):
         try:
@@ -44,6 +44,43 @@ class Client(metaclass=Singleton):
             self.handle_request(EVENTS.MISSING_DATA)
         logger.debug("handler started")
 
+    def make_transaction(self, symbol, mode, quantity):
+        self.api.refresh()
+        poss = [pos for pos in self.api.positions if pos.instrument == symbol]
+        if mode == ACTIONS.BUY:
+            quantity = self._fix_quantity(poss, quantity, 'sell')
+            if quantity > 0:
+                self._open_pos(symbol, 'buy', quantity)
+        elif mode == ACTIONS.SELL:
+            quantity = self._fix_quantity(poss, quantity, 'buy')
+            if quantity > 0:
+                self._open_pos(symbol, 'sell', quantity)
+
+    def _open_pos(self, symbol, mode, quantity):
+        STATE = False
+        while STATE is not True:
+            try:
+                self.api.open_position(mode, symbol, quantity)
+                STATE = True
+            except trading212api.exceptions.PriceChangedException as e:
+                continue
+            except trading212api.exceptions.MaxQuantityExceeded as e:
+                logger.warning("Maximum quantity exceeded")
+                break
+        self.handle_request(EVENTS.OPENED_POS, data={'symbol': symbol, 'mode': mode})
+
+    def _fix_quantity(self, poss, quantity, mode):
+        pos_left = [x for x in poss if x.mode == mode]  # get position of mode
+        if pos_left:  # if existent
+            for pos in pos_left:  # iterate over
+                self.api.close_position(pos.id)  # close
+                self.RESULTS += pos.result  # update returns
+                self.handle_request(EVENTS.CLOSED_POS, data={'pos': pos})
+                quantity -= pos.quantity  # update quantity
+                if quantity <= 0:  # if above quantity needed
+                    break
+        return quantity
+
     def get_last_closes(self, symbol, num, timeframe):
         candles = self.api.get_historical_data(symbol, num, timeframe)
         closes = [candle['bid']['close'] for candle in candles]
@@ -54,8 +91,8 @@ class Client(metaclass=Singleton):
         self.state = STATES[state]
         logger.debug("%s state: %s" % (self.__class__.__name__, STATES[state].name))
 
-    def pass_request(self, request, **kwargs):
+    def pass_request(self, request, **kw):
         """pattern function"""
         logger.debug("caught request: %s" % request)
         if self._successor is not None:
-            self._successor.handle_request(request)
+            self._successor.handle_request(request, **kw)

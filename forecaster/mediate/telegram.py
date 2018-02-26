@@ -10,6 +10,7 @@ import logging
 
 import telegram
 from telegram import Bot
+from telegram.error import TimedOut
 from telegram.ext import (CommandHandler, ConversationHandler, MessageHandler,
                           Updater)
 from telegram.ext.filters import Filters
@@ -98,7 +99,7 @@ class TelegramMediator(Chainer):
 
     def cmd_results(self, bot, update):
         logger.debug("results command caught")
-        self.notify_observers(event="results")
+        self.renew_connection()
         text = "Actual results are *%.2f*" % Client().RESULTS
         update.message.reply_text(text=text, parse_mode=telegram.ParseMode.MARKDOWN)
 
@@ -106,3 +107,24 @@ class TelegramMediator(Chainer):
         logger.debug("configuration needed")
         self.bot.send_message(chat_id=self.chat_id, text="Configuration needed to continue")
         raise
+
+    def open_pos(self, name, mode):
+        logger.debug("new_position telegram")
+        self.renew_connection()
+        text = "Opened position *%s*\nMode: *%s*" % (name, mode)
+        self.bot.send_message(chat_id=self.chat_id, text=text,
+                              parse_mode=telegram.ParseMode.MARKDOWN)
+
+    def close_pos(self, result):
+        logger.debug("close_position telegram")
+        self.renew_connection()
+        text = "Closed position with gain of *%.2f*" % result
+        self.bot.send_message(chat_id=self.chat_id, text=text,
+                              parse_mode=telegram.ParseMode.MARKDOWN)
+
+    def renew_connection(self):
+        try:
+            self.bot.getChat(chat_id=self.chat_id, timeout=5)  # get chat info to renew connection
+        except TimedOut as e:
+            logger.error("Telegram timed out, renewing")
+        logger.debug("renewed connection")

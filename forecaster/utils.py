@@ -28,6 +28,13 @@ class EVENTS(Enum):
     START_BOT = auto()
     STOP_BOT = auto()
     MISSING_DATA = auto()
+    OPENED_POS = auto()
+    CLOSED_POS = auto()
+
+
+class ACTIONS(Enum):
+    BUY = auto()
+    SELL = auto()
 
 
 def read_strategy(name):
