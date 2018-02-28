@@ -1,21 +1,26 @@
-# HANDLER
+# --[ HANDLER ]--
 handler:
   mode:               demo
 
-# TELEGRAM
+# --[ TELEGRAM ]--
 mediator:             None
 
-# MEAN REVERSION
+# --[ MEAN ]--
 predicter:
   multiplier:         2
   timeframe:          1h
-  absolute-timeframe: 3600
   count:              5
 
-# AUTOMATON
+# --[ AUTOMATON ]--
 automaton:
-  time_to_sleep:      3600
-  fixed-quantity:     5000
+  # transaction cycle
+  sleep_transactions: 3600
+  # position cycle
+  check_positions:    False
+  sleep_positions:    1800
+  # transaction details
+  position_timeframe: 1h
+  fixed_quantity:     12500
   currencies:
     - EURUSD_ZERO
     - USDJPY_ZERO

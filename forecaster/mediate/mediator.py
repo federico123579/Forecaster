@@ -12,7 +12,7 @@ import logging
 from forecaster.mediate.telegram import TelegramMediator
 from forecaster.utils import STATES, StaterChainer, read_strategy
 
-logger = logging.getLogger('forecaster.mediate.mediator')
+logger = logging.getLogger('forecaster.mediate')
 
 
 class Mediator(StaterChainer):

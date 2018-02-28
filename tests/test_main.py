@@ -10,15 +10,15 @@ def main():
     logging.getLogger('forecaster').setLevel(logging.DEBUG)
     bot = Bot('mean_rev')  # init bot
     bot.handler.start()
-    closes = bot.handler.get_last_closes('EURUSD', 100, '5m')  # get closes
+    candles = bot.handler.get_last_candles('EURUSD', 100, '1d')  # get candles
     samples = []  # contains all samples
-    for i in range(len(closes)):
-        if i+5 <= len(closes):
-            samples.append(closes[i:i+5])
+    for i in range(len(candles)):
+        if i+5 <= len(candles):
+            samples.append(candles[i:i+5])
     # test all samples
     predictions = []
     for sample in samples:
-        predictions.append(bot.predict.MeanReversion.predict(sample))
+        predictions.append(bot.predict.MeanReversion.predict(sample).value)
     logger.info(predictions)
 
 

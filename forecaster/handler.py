@@ -11,6 +11,7 @@ import logging
 import trading212api
 from forecaster.exceptions import MissingData
 from forecaster.utils import ACTIONS, EVENTS, STATES, Singleton, read_strategy
+from trading212api.exceptions import *
 
 logger = logging.getLogger('forecaster.handler')
 
@@ -36,48 +37,76 @@ class Client(metaclass=Singleton):
             self.data = read_strategy('data')
         except FileNotFoundError:
             raise MissingData()
+        self._login()
+        logger.debug("handler started")
+
+    def _login(self):
         try:
             self.api.login(self.data['username'], self.data['password'])
-        except trading212api.exceptions.InvalidCredentials as e:
+        except InvalidCredentials as e:
             logger.error("Invalid credentials with %s" % e.username)
             self.set_state('MISSING_DATA')
             self.handle_request(EVENTS.MISSING_DATA)
-        logger.debug("handler started")
+        logger.debug("logged in")
 
     def make_transaction(self, symbol, mode, quantity):
+        self.refresh()
         self.api.refresh()
         poss = [pos for pos in self.api.positions if pos.instrument == symbol]
         if mode == ACTIONS.BUY:
             self._fix_trend(poss, 'sell')
-            self._open_pos(symbol, 'buy', quantity)
+            self.open_pos(symbol, 'buy', quantity)
         elif mode == ACTIONS.SELL:
             self._fix_trend(poss, 'buy')
-            self._open_pos(symbol, 'sell', quantity)
+            self.open_pos(symbol, 'sell', quantity)
 
-    def _open_pos(self, symbol, mode, quantity):
+    def open_pos(self, symbol, mode, quantity):
+        """open position and handle exceptions"""
+        self.refresh()  # renovate sessions
         STATE = False
         while STATE is not True:
             try:
                 self.api.open_position(mode, symbol, quantity)
                 STATE = True
-            except trading212api.exceptions.PriceChangedException as e:
+            except PriceChangedException as e:
                 continue
-            except trading212api.exceptions.MaxQuantityExceeded as e:
+            except MaxQuantityExceeded as e:
                 logger.warning("Maximum quantity exceeded")
                 break
+
+    def close_pos(self, pos):
+        """close position and update results"""
+        self.refresh()  # renovate sessions
+        STATE = False
+        while STATE is not True:
+            try:
+                self.api.close_position(pos.id)  # close
+                STATE = True
+            except NoPriceException as e:
+                logger.warning("NoPriceException caught")
+            except ValueError as e:
+                logger.warning("Position not found")
+                break
+        self.RESULTS += pos.result  # update returns
+        self.handle_request(EVENTS.CLOSED_POS, data={'pos': pos})
 
     def _fix_trend(self, poss, mode):
         pos_left = [x for x in poss if x.mode == mode]  # get position of mode
         if pos_left:  # if existent
             for pos in pos_left:  # iterate over
-                self.api.close_position(pos.id)  # close
-                self.RESULTS += pos.result  # update returns
-                self.handle_request(EVENTS.CLOSED_POS, data={'pos': pos})
+                self.close_pos(pos)
 
-    def get_last_closes(self, symbol, num, timeframe):
+    def get_last_candles(self, symbol, num, timeframe):
         candles = self.api.get_historical_data(symbol, num, timeframe)
-        closes = [candle['bid']['close'] for candle in candles]
-        return closes
+        prices = [candle['bid'] for candle in candles]
+        return prices
+
+    def refresh(self):
+        try:
+            self.api.refresh()
+        except RequestError as e:
+            logger.warning("API unavaible")
+            self._login()
 
     def set_state(self, state):
         """pattern function"""

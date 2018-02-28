@@ -36,6 +36,17 @@ class ACTIONS(Enum):
     SELL = auto()
 
 
+TIMEFRAME = {
+    '1d': 60 * 60 * 24,
+    '4h': 60 * 60 * 4,
+    '1h': 60 * 60,
+    '15m': 60 * 15,
+    '10m': 60 * 10,
+    '5m': 60 * 5,
+    '1m': 60
+}
+
+
 def read_strategy(name):
     return read_yml(get_yaml(name))
 

@@ -44,6 +44,7 @@ class TelegramMediator(Chainer):
                     [MessageHandler(Filters.text, self.password_key, pass_chat_data=True)]},
             fallbacks=[CommandHandler('cancel', ConversationHandler.END)]))
         handlers.append(CommandHandler('results', self.cmd_results))
+        handlers.append(CommandHandler('valued', self.cmd_valued))
         handlers.append(CommandHandler('start', self.cmd_start))
         handlers.append(CommandHandler('stop', self.cmd_stop))
         handlers.append(CommandHandler('restart', self.cmd_restart))
@@ -64,12 +65,14 @@ class TelegramMediator(Chainer):
 
     def cmd_stop(self, bot, update):
         logger.debug("stop command caught")
+        self.renew_connection()
         update.message.reply_text("Stopping...")
         self.handle_request(EVENTS.STOP_BOT)
         update.message.reply_text("Bot stopped")
 
     def cmd_restart(self, bot, update):
         logger.debug("restart command caught")
+        self.renew_connection()
         update.message.reply_text("Restarting...")
         self.handle_request(EVENTS.STOP_BOT)
         self.handle_request(EVENTS.START_BOT)
@@ -104,6 +107,16 @@ class TelegramMediator(Chainer):
         self.bot.send_message(chat_id=self.chat_id, text=text,
                               parse_mode=telegram.ParseMode.MARKDOWN)
 
+    def cmd_valued(self, bot, update):
+        logger.debug("valued command caught")
+        self.renew_connection()
+        Client().refresh()
+        result = Client().api.account.funds['result']
+        num_pos = len(Client().api.account.positions)
+        text = "Actual value is *%.2f* with *%d* positions" % (result, num_pos)
+        self.bot.send_message(chat_id=self.chat_id, text=text,
+                              parse_mode=telegram.ParseMode.MARKDOWN)
+
     def config_needed(self):
         logger.debug("configuration needed")
         self.bot.send_message(chat_id=self.chat_id, text="Configuration needed to continue")
@@ -113,6 +126,7 @@ class TelegramMediator(Chainer):
         logger.debug("close_position telegram")
         self.renew_connection()
         text = "Closed position with gain of *%.2f*" % result
+        logger.debug("closed position - revenue of %.2f" % result)
         self.bot.send_message(chat_id=self.chat_id, text=text,
                               parse_mode=telegram.ParseMode.MARKDOWN)
 
