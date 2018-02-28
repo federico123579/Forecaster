@@ -8,7 +8,7 @@ logger = logging.getLogger('forecaster.tests')
 
 def main():
     logging.getLogger('forecaster').setLevel(logging.DEBUG)
-    bot = Bot('mean_rev')  # init bot
+    bot = Bot('default')  # init bot
     bot.handler.start()
     candles = bot.handler.get_last_candles('EURUSD', 100, '1d')  # get candles
     samples = []  # contains all samples

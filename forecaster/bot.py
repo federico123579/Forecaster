@@ -75,7 +75,7 @@ class Bot(StaterChainer):
 def main():
     try:
         logging.getLogger('forecaster').setLevel(logging.DEBUG)
-        bot = Bot('mean_rev')
+        bot = Bot('default')
         bot.start()
         while True:
             time.sleep(5)

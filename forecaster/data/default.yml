@@ -2,6 +2,12 @@
 handler:
   mode:               demo
 
+# --[ SECURITY ]--
+# security:
+#   maximum-model-margin: 0.5
+#   margin-risk:          0.5
+#   max-concurrent-trans: 6
+
 # --[ TELEGRAM ]--
 mediator:             None
 
