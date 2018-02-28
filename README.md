@@ -1,10 +1,11 @@
 # Forecaster
 
-Un software progettato per prevedere l'andamento di valute **forex** nell'arco di poco tempo. Grazie ai network neurali e al _Deep Learning_ tutto ciò non è più fantascienza, ma bensì è una grande possibilità di guadagno.
+![Forecaster Logo](./static/crystal_sphere.png)
 
 ## Developing
 
 Verranno utilizzati diversi _Design Patterns_:
+
 - creational: _da definirsi_
 - structural: _da definirsi_
 - behavioral: _da definirsi_
