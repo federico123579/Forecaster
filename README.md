@@ -1,8 +1,6 @@
-# Forecaster
-
-<center>
+<p align="center">
   <img src="./static/crystal_sphere.png" alt="Forecaster Logo">
-</center>
+</p>
 
 A trading software that use a mean reversion algorithm to predict trend in regolar time spans and make transaction to Trading212 broker service using the Trading212 APIs (that I've made before).
 
@@ -12,9 +10,9 @@ A trading software that use a mean reversion algorithm to predict trend in regol
 
 The algorithm used is the Mean Reversion with this formula:
 
-<center>
+<p align="center">
   <img src="./static/formula-1.png" alt="Forecaster Logo">
-</center>
+</p>
 
 with `avg` as a **price average**, `mult` for a **costant** and `dev` for a **deviation**. In my tests I found most effective the use of a _linear regression_ as `price average` and a finantial index named _Average True Range_ (that defines volatility) as `deviation`.
 
