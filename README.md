@@ -1,19 +1,34 @@
 # Forecaster
 
-![Forecaster Logo](./static/crystal_sphere.png)
+<center>
+  <img src="./static/crystal_sphere.png" alt="Forecaster Logo">
+</center>
+
+A trading software that use a mean reversion algorithm to predict trend in regolar time spans and make transaction to Trading212 broker service using the Trading212 APIs (that I've made before).
+
+## Behavior
+
+### Algorithm
+
+The algorithm used is the Mean Reversion with this formula:
+
+<center>
+  <img src="./static/formula-1.png" alt="Forecaster Logo">
+</center>
+
+with `avg` as a **price average**, `mult` for a **costant** and `dev` for a **deviation**. In my tests I found most effective the use of a _linear regression_ as `price average` and a finantial index named _Average True Range_ (that defines volatility) as `deviation`.
 
 ## Developing
 
-Verranno utilizzati diversi _Design Patterns_:
+Will be used these _Design Patterns_:
 
-- creational: _da definirsi_
-- structural: _da definirsi_
-- behavioral: _da definirsi_
+- creational: _`singleton`_
+- structural: _`Facade`_, _`Decorator`_
+- behavioral: _`Chain of responsability`_, _`Strategy`_, _`State`_
 
 ### Main Libraries
 
-- Keras LSTM Network
 - Telegram API
 - Trading212 API
 
-Il software si appoggierà sulle API di telegram per ricevere comandi che verranno elaborati e processati sul _Client_, in modo da renderlo _serverless_.
+The `Bot` uses Telegram APIs to communicate with the user news and receive commands (asyncronously) and Trading212 API to make transactions and drive predictive algorithms.
