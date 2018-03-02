@@ -41,6 +41,7 @@ class MeanReversionPredicter(object):
             return ACTIONS.BUY
 
     def get_band(self, candles):
+        """get bolliger band"""
         day_closes = [x['close'] for x in candles]
         moving_average = stats.linregress(range(1, len(day_closes) + 1), day_closes)[1]
         moving_dev = self._get_ATR(candles)  # deviation function
@@ -48,6 +49,7 @@ class MeanReversionPredicter(object):
         return band
 
     def _get_ATR(self, candles):
+        """get Average True Range"""
         ATR = 0.0
         for candle in candles[1:]:
             ATR = (ATR * (len(candles) - 1) + (candle['high'] - candle['low'])) / len(candles)

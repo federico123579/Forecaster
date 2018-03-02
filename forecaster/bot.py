@@ -15,6 +15,7 @@ from forecaster.exceptions import *
 from forecaster.handler import Client
 from forecaster.mediate import Mediator
 from forecaster.predict import Predicter
+from forecaster.security import Preserver
 from forecaster.utils import EVENTS, STATES, StaterChainer, read_strategy
 
 logger = logging.getLogger('forecaster.bot')
@@ -26,10 +27,14 @@ class Bot(StaterChainer):
     def __init__(self, strat):
         super().__init__()
         self.strategy = read_strategy(strat)
+        # LEVEL ZERO - access to apis
         self.handler = Client(strat, self)
         self.mediate = Mediator(strat, self)
+        # LEVEL ONE - algorithmic core
         self.predict = Predicter(strat)
-        self.automate = Automaton(strat, self.predict, self.mediate, self)
+        # LEVEL TWO - automation
+        self.security = Preserver(strat)
+        self.automate = Automaton(strat, self.predict, self.mediate, self.security, self)
 
     def handle_request(self, event, **kw):
         if event == EVENTS.START_BOT:

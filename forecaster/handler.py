@@ -49,17 +49,6 @@ class Client(metaclass=Singleton):
             self.handle_request(EVENTS.MISSING_DATA)
         logger.debug("logged in")
 
-    def make_transaction(self, symbol, mode, quantity):
-        self.refresh()
-        self.api.refresh()
-        poss = [pos for pos in self.api.positions if pos.instrument == symbol]
-        if mode == ACTIONS.BUY:
-            self._fix_trend(poss, 'sell')
-            self.open_pos(symbol, 'buy', quantity)
-        elif mode == ACTIONS.SELL:
-            self._fix_trend(poss, 'buy')
-            self.open_pos(symbol, 'sell', quantity)
-
     def open_pos(self, symbol, mode, quantity):
         """open position and handle exceptions"""
         self.refresh()  # renovate sessions
@@ -72,6 +61,9 @@ class Client(metaclass=Singleton):
                 continue
             except MaxQuantityExceeded as e:
                 logger.warning("Maximum quantity exceeded")
+                break
+            except ProductNotAvaible as e:
+                logger.warning("Product not avaible")
                 break
 
     def close_pos(self, pos):
@@ -90,12 +82,6 @@ class Client(metaclass=Singleton):
         self.RESULTS += pos.result  # update returns
         self.handle_request(EVENTS.CLOSED_POS, data={'pos': pos})
 
-    def _fix_trend(self, poss, mode):
-        pos_left = [x for x in poss if x.mode == mode]  # get position of mode
-        if pos_left:  # if existent
-            for pos in pos_left:  # iterate over
-                self.close_pos(pos)
-
     def get_last_candles(self, symbol, num, timeframe):
         candles = self.api.get_historical_data(symbol, num, timeframe)
         prices = [candle['bid'] for candle in candles]
@@ -107,6 +93,7 @@ class Client(metaclass=Singleton):
         except RequestError as e:
             logger.warning("API unavaible")
             self._login()
+            self.api.refresh()
 
     def set_state(self, state):
         """pattern function"""

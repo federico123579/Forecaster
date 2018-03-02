@@ -2,30 +2,31 @@
 handler:
   mode:               demo
 
-# --[ SECURITY ]--
-# security:
-#   maximum-model-margin: 0.5
-#   margin-risk:          0.5
-#   max-concurrent-trans: 6
-
 # --[ TELEGRAM ]--
 mediator:             None
 
 # --[ MEAN ]--
 predicter:
   multiplier:         2
-  timeframe:          1h
-  count:              5
+
+# --[ SECURITY ]--
+preserver:
+  relative:
+    gain:             0.005
+    loss:             0.002
+  fixed:
+    gain:             20
+    loss:             -5
+#   maximum-model-margin: 0.5
+#   margin-risk:      0.5
+#   max-concurrent-trans: 6
 
 # --[ AUTOMATON ]--
 automaton:
-  # transaction cycle
   sleep_transactions: 3600
-  # position cycle
-  check_positions:    False
-  sleep_positions:    1800
-  # transaction details
-  position_timeframe: 1h
+  timeframe:          1h
+  count:              5
+  fix_trend:          True
   fixed_quantity:     12500
   currencies:
     - EURUSD_ZERO
@@ -33,3 +34,17 @@ automaton:
     - USDCHF_ZERO
     - GBPUSD_ZERO
     - USDCAD_ZERO
+
+positioner:
+  # MEAN REVERSION CHECK
+  reversion:
+    activate:         False
+    timeframe:        1h
+    sleep:            60
+  # SECURITY STOP LIMITS CHECK
+  security-relative:
+    activate:         False
+    sleep:            60
+  security-fixed:
+    activate:         True
+    sleep:            60
