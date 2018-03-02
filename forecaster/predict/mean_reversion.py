@@ -31,8 +31,8 @@ class MeanReversionPredicter(object):
         # linear least-squared regression
         band = self.get_band(candles)
         close = [x['close'] for x in candles][-1]
-        diff = band - close  # get diff to display
-        perc = 100 * (1 - close / band)  # get diff to display
+        diff = close - band  # get diff to display
+        perc = 100 * (close / band - 1)  # get diff to display
         if close > band:
             logger.debug("above bolliger band of %f - %.2f%%" % (diff, perc))
             return ACTIONS.SELL

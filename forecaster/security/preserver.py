@@ -23,7 +23,7 @@ class Preserver(object):
 
     def check_position_relative(self, position):
         """check stop limits"""
-        perc = position.result / position.price
+        perc = position.price / position.current_price
         if perc >= self.strategy['relative']['gain']:
             logger.debug("position gain %.2f%%" % (100 * perc))
             Client().close_pos(position)

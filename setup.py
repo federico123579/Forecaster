@@ -1,6 +1,8 @@
 from setuptools import find_packages, setup
 
-from forecaster import __VERSION__
+__AUTHOR__ = "Federico Lolli"
+__VERSION__ = "v0.1a1"
+
 
 setup(
     name="forecaster",
@@ -9,7 +11,7 @@ setup(
     install_requires=[
         'pandas',
         'numpy',
-        'scikit-learn',
+        'scipy',
         'pyyaml',
         'trading212-api',
         'python-telegram-bot',

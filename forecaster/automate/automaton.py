@@ -87,11 +87,11 @@ class Transaction(object):
         if self.mode == ACTIONS.BUY:
             if fix:  # if requested to fix
                 self._fix_trend(poss, 'sell')
-            Client().open_pos(symbol, 'buy', quantity)
+            Client().open_pos(self.symbol, 'buy', self.quantity)
         elif self.mode == ACTIONS.SELL:
             if fix:  # if requested to fix
                 self._fix_trend(poss, 'buy')
-            Client().open_pos(symbol, 'sell', quantity)
+            Client().open_pos(self.symbol, 'sell', self.quantity)
 
     def _fix_trend(self, poss, mode):
         pos_left = [x for x in poss if x.mode == mode]  # get position of mode
