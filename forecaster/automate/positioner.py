@@ -26,8 +26,9 @@ class ACTION(Enum):
 class Positioner(Chainer):
     """handle all positions"""
 
-    def __init__(self, strat, auto_strat, preserver):
+    def __init__(self, strat, auto_strat, preserver, predicter):
         self.preserver = preserver
+        self.predicter = predicter
         strat = read_strategy(strat)
         self.strategy = strat['positioner']
         self.auto_strategy = auto_strat
@@ -71,7 +72,7 @@ class Positioner(Chainer):
     def _rev_check(self, pos):
         _strat = self.strategy['reversion']
         # get number of candles
-        count = int(TIMEFRAME[self.auto_strat['timeframe']] /
+        count = int(TIMEFRAME[self.auto_strategy['timeframe']] /
                     TIMEFRAME[_strat['timeframe']]) * self.auto_strategy['count']
         candles = Client().get_last_candles(  # get candles
             pos.instrument, count, _strat['timeframe'])
@@ -96,7 +97,8 @@ class Positioner(Chainer):
             for pos in Client().api.account.positions:
                 Client().refresh()  # refresh and update
                 action = func(pos)
-                self.handle_request(action, pos=pos)
+                if action is not None:
+                    self.handle_request(ACTION[action], pos=pos)
             wait_precisely(sleep, start, event)  # wait and repeat
 
 
@@ -124,7 +126,6 @@ class FilterWrapper(Chainer):
 
 class Damper(object):
     """damper filter"""
-
     def __init__(self, mx, timeout):
         self.max = mx  # max tries
         self.timeout = timeout
@@ -135,17 +136,20 @@ class Damper(object):
     def check(self, pos):
         self._add(pos)  # check position
         if self.positions[pos.id] >= 0 and pos.result <= 0:  # if negative and other tries
-            if time.time() - self.times[pos.id] < self.timeout:  # if short time
+            time_elaps = time.time() - self.times[pos.id]
+            if time_elaps < self.timeout:  # if short time
+                logger.debug("time left: %d seconds" % (self.timeout - time_elaps))
                 return ACTION.KEEP
             self.positions[pos.id] -= 1  # countdown
             self.times[pos.id] = time.time()  # set timeout time
-            logger.debug("keep left for %s: %d" % (pos.instrument, self.positions[pos]))
+            logger.debug("keep left for %s: %d" % (pos.instrument, self.positions[pos.id]))
             return ACTION.KEEP
         else:
+            del self.positions[pos.id]
             return ACTION.CLOSE
 
     def _add(self, pos):
-        if pos not in self.positions:
-            self.positions[pos.id] = 0
-        if pos not in self.times:
+        if pos.id not in self.positions:
+            self.positions[pos.id] = self.max
+        if pos.id not in self.times:
             self.times[pos.id] = 0

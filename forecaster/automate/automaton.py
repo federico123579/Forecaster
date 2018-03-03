@@ -30,7 +30,7 @@ class Automaton(StaterChainer):
         self.strategy = read_strategy(strat)['automaton']
         time_trans = self.strategy['timeframe']
         self.timeframe = [time_trans, TIMEFRAME[time_trans]]
-        self.positioner = Positioner(strat, self.strategy, preserver)
+        self.positioner = Positioner(strat, self.strategy, preserver, predicter)
         self.LOOP = Event()
         self.set_state('READY')
 

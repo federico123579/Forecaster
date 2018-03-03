@@ -25,17 +25,17 @@ class Preserver(object):
         perc = position.price / position.current_price
         if perc >= self.strategy['relative']['gain']:
             logger.debug("position gain %.2f%%" % (100 * perc))
-            return 'CLOSE_POS'
+            return 'CLOSE'
         if perc <= self.strategy['relative']['loss']:
             logger.debug("position loss %.2f%%" % (100 * perc))
-            return 'CLOSE_POS'
+            return 'CLOSE'
 
     def check_position_fixed(self, position):
         """check stop limits"""
         profit = position.result
         if profit >= self.strategy['fixed']['gain']:
             logger.debug("position gain %.2f" % profit)
-            return 'CLOSE_POS'
+            return 'CLOSE'
         if profit <= self.strategy['fixed']['loss']:
             logger.debug("position loss %.2f" % profit)
-            return 'CLOSE_POS'
+            return 'CLOSE'

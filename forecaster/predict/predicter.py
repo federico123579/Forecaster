@@ -35,7 +35,7 @@ class Predicter(object):
         band = self.MeanReversion.get_band(candles)
         if position.mode == 'buy':
             if position.current_price >= band:
-                return 'CLOSE_POS'
+                return 'CLOSE'
         elif position.mode == 'sell':
             if position.current_price <= band:
-                return 'CLOSE_POS'
+                return 'CLOSE'
