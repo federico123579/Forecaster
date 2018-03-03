@@ -48,3 +48,10 @@ positioner:
   security-fixed:
     activate:         True
     sleep:            60
+
+# [ FILTER ]
+filter:
+  damper:
+    activate:       True
+    max:            5
+    timeout:        600

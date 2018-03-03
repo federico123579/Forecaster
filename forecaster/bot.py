@@ -83,7 +83,7 @@ def main():
         bot = Bot('default')
         bot.start()
         while True:
-            time.sleep(5)
+            time.sleep(2)
     except KeyboardInterrupt:
         logger.debug("exiting")
         bot.stop()

@@ -97,4 +97,4 @@ class Transaction(object):
         pos_left = [x for x in poss if x.mode == mode]  # get position of mode
         if pos_left:  # if existent
             for pos in pos_left:  # iterate over
-                self.close_pos(pos)
+                Client().close_pos(pos)

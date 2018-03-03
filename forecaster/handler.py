@@ -83,6 +83,7 @@ class Client(metaclass=Singleton):
         self.handle_request(EVENTS.CLOSED_POS, data={'pos': pos})
 
     def get_last_candles(self, symbol, num, timeframe):
+        self.refresh()  # renovate sessions
         candles = self.api.get_historical_data(symbol, num, timeframe)
         prices = [candle['bid'] for candle in candles]
         return prices
