@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
+from forecaster.predict.utils import AverageTrueRange
 from forecaster.utils import ACTIONS
 
 logger = logging.getLogger('forecaster.predict.mean_reversion')
@@ -44,13 +45,6 @@ class MeanReversionPredicter(object):
         """get bolliger band"""
         day_closes = [x['close'] for x in candles]
         moving_average = stats.linregress(range(1, len(day_closes) + 1), day_closes)[1]
-        moving_dev = self._get_ATR(candles)  # deviation function
+        moving_dev = AverageTrueRange(candles)  # deviation function
         band = moving_average + self.mult * moving_dev  # calculate Bolliger Band
         return band
-
-    def _get_ATR(self, candles):
-        """get Average True Range"""
-        ATR = 0.0
-        for candle in candles[1:]:
-            ATR = (ATR * (len(candles) - 1) + (candle['high'] - candle['low'])) / len(candles)
-        return ATR

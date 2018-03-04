@@ -10,13 +10,7 @@ predicter:
   multiplier:         2
 
 # --[ SECURITY ]--
-preserver:
-  relative:
-    gain:             0.005
-    loss:             0.002
-  fixed:
-    gain:             20
-    loss:             -5
+preserver:            None
 #   maximum-model-margin: 0.5
 #   margin-risk:      0.5
 #   max-concurrent-trans: 6
@@ -35,23 +29,32 @@ automaton:
     - GBPUSD_ZERO
     - USDCAD_ZERO
 
-positioner:
-  # MEAN REVERSION CHECK
+# -[ POSITIONER ]-
+positioner:           None
+
+# [ CHECKERS ]
+checkers:
+  relative:
+    activate:         True
+    sleep:            60
+    gain:             0.005
+    loss:             0.002
+    avg:
+      timeframe:      1h
+      count:          5
   reversion:
     activate:         False
     timeframe:        1h
     sleep:            60
-  # SECURITY STOP LIMITS CHECK
-  security-relative:
+  fixed:
     activate:         False
     sleep:            60
-  security-fixed:
-    activate:         True
-    sleep:            60
+    gain:             20
+    loss:             -5
 
 # [ FILTER ]
 filter:
   damper:
-    activate:       True
-    max:            5
-    timeout:        600
+    activate:         False
+    max:              5
+    timeout:          600

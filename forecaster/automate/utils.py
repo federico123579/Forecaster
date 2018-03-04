@@ -6,11 +6,16 @@ forecaster.automate.utils
 
 Locals utils in automate model.
 """
-
 import logging
 import time
+from enum import Enum, auto
 
 logger = logging.getLogger('forecaster.automate.utils')
+
+
+class ACTIONS(Enum):
+    CLOSE = auto()
+    KEEP = auto()
 
 
 def wait_precisely(timeout, start_time, event):

@@ -21,7 +21,7 @@ with `avg` as a **price average**, `mult` for a **costant** and `dev` for a **de
 Will be used these _Design Patterns_:
 
 - creational: _`singleton`_
-- structural: _`Facade`_, _`Decorator`_
+- structural: _`Proxy`_, _`Decorator`_
 - behavioral: _`Chain of responsability`_, _`Strategy`_, _`State`_
 
 ### Main Libraries

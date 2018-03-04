@@ -29,13 +29,3 @@ class Predicter(object):
         candles = Client().get_last_candles(symbol, interval, timeframe)
         prediction = self.MeanReversion.predict(candles)
         return prediction
-
-    def check_position(self, position, candles):
-        """predict bolliger band more accurate"""
-        band = self.MeanReversion.get_band(candles)
-        if position.mode == 'buy':
-            if position.current_price >= band:
-                return 'CLOSE'
-        elif position.mode == 'sell':
-            if position.current_price <= band:
-                return 'CLOSE'
