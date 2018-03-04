@@ -81,15 +81,15 @@ class RelativeChecker(PositionChecker):
         candles = Client().get_last_candles(
             position.instrument, self.avg['count'], self.avg['timeframe'])
         ATR = AverageTrueRange(candles)
-        diff = ATR - pos_price
-        if position.mode == 'buy':
-            price_tend = pos_price + diff * self.gain
-        elif position.mode == 'sell':
-            price_tend = pos_price + diff * self.loss
+        diff = pos_price - ATR
+        fav_price = pos_price + diff * self.gain
+        unfav_price = pos_price - diff * self.loss
         # closer to 1 cross the limit, as it goes down the loss increases
-        progress = -(price_tend - curr_price) / (price_tend - pos_price) + 1
+        progress = -(fav_price - curr_price) / (fav_price - pos_price) + 1
+        unprogress = -(unfav_price - curr_price) / (unfav_price - pos_price) + 1
         logger.debug("progress to profit %.2f%%" % (100 * progress))
-        if progress >= 1:
+        logger.debug("progress to loss %.2f%%" % (100 * unprogress))
+        if progress >= 1 or unprogress >= 1:
             return 'CLOSE'
         else:
             return 'KEEP'
@@ -123,7 +123,7 @@ class ReversionChecker(PositionChecker):
 # | Check if profit exceeded limits fixed limits                         |
 # +----------------------------------------------------------------------+
 class FixedChecker(PositionChecker):
-    def __init__(self, strat, successor):
+    def __init__(self, strat, positioner):
         super().__init__(strat['sleep'], positioner)
         self.gain = strat['gain']
         self.loss = strat['loss']

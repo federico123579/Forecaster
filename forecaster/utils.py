@@ -106,7 +106,7 @@ class Chainer(metaclass=abc.ABCMeta):
     def pass_request(self, request, **kwargs):
         logger.debug("caught request: %s" % request)
         if self._successor is not None:
-            self._successor.handle_request(request)
+            self._successor.handle_request(request, **kwargs)
 
     @abc.abstractmethod
     def handle_request(self):
