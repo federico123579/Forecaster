@@ -19,8 +19,7 @@ logger = logging.getLogger('forecaster.automate.positioner')
 class Positioner(Chainer):
     """handle all positions"""
 
-    def __init__(self, strat, auto_strat, preserver, predicter):
-        self.preserver = preserver
+    def __init__(self, strat, auto_strat, predicter):
         self.predicter = predicter
         strat = read_strategy(strat)
         self.strategy = strat['positioner']

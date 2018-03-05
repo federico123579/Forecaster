@@ -10,10 +10,8 @@ predicter:
   multiplier:         2
 
 # --[ SECURITY ]--
-preserver:            None
-#   maximum-model-margin: 0.5
-#   margin-risk:      0.5
-#   max-concurrent-trans: 6
+preserver:
+  funds_risk: 0.5
 
 # --[ AUTOMATON ]--
 automaton:
@@ -37,8 +35,8 @@ checkers:
   relative:
     activate:         True
     sleep:            60
-    gain:             0.005
-    loss:             0.002
+    gain:             0.002
+    loss:             0.005
     avg:
       timeframe:      1h
       count:          5

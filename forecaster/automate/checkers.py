@@ -12,9 +12,9 @@ import abc
 import logging
 import time
 from enum import Enum
-from threading import Event, Thread
+from threading import Event
 
-from forecaster.automate.utils import ACTIONS, wait_precisely
+from forecaster.automate.utils import ACTIONS, LogThread, wait_precisely
 from forecaster.handler import Client
 from forecaster.predict.utils import AverageTrueRange
 from forecaster.utils import TIMEFRAME, Chainer, read_strategy
@@ -52,7 +52,7 @@ class PositionChecker(Chainer, metaclass=abc.ABCMeta):
 
     def start(self):
         self.active.set()
-        Thread(target=self.run).start()
+        LogThread(target=self.run).start()
         logger.debug("%s started" % self.__class__.__name__)
 
     def stop(self):

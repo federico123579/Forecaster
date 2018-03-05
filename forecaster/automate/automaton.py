@@ -9,10 +9,10 @@ Facade class to automate algorithms.
 
 import logging
 import time
-from threading import Event, Thread
+from threading import Event
 
 from forecaster.automate.positioner import Positioner
-from forecaster.automate.utils import wait, wait_precisely
+from forecaster.automate.utils import wait, wait_precisely, LogThread
 from forecaster.handler import Client
 from forecaster.utils import ACTIONS, TIMEFRAME, StaterChainer, read_strategy
 
@@ -30,7 +30,7 @@ class Automaton(StaterChainer):
         self.strategy = read_strategy(strat)['automaton']
         time_trans = self.strategy['timeframe']
         self.timeframe = [time_trans, TIMEFRAME[time_trans]]
-        self.positioner = Positioner(strat, self.strategy, preserver, predicter)
+        self.positioner = Positioner(strat, self.strategy, predicter)
         self.LOOP = Event()
         self.set_state('READY')
 
@@ -40,7 +40,7 @@ class Automaton(StaterChainer):
     def start(self):
         """start threads"""
         self.LOOP.set()
-        Thread(target=self.check_closes).start()  # check closes
+        LogThread(target=self.check_closes).start()  # check closes
         logger.debug("check_closes thread started")
         self.positioner.start()
         logger.debug("positioner started")
@@ -58,11 +58,8 @@ class Automaton(StaterChainer):
         while self.LOOP.is_set():
             start = time.time()
             for symbol in self.strategy['currencies']:
-                prediction = self.predicter.predict(
-                    symbol, self.strategy['count'], self.strategy['timeframe'])
-                tran = Transaction(symbol, prediction, self.strategy['fixed_quantity'])
-                tran.complete(self.strategy['fix_trend'])
-                logger.debug("transaction completed")
+                tran = Transaction(symbol, self)
+                tran.complete()
             wait_precisely(self.strategy['sleep_transactions'], start, self.LOOP)
 
     def _time_left(self):
@@ -76,22 +73,37 @@ class Automaton(StaterChainer):
 
 
 class Transaction(object):
-    def __init__(self, symbol, mode, quantity):
+    def __init__(self, symbol, automaton):
+        self.auto = automaton
         self.symbol = symbol
-        self.mode = mode
-        self.quantity = quantity
+        self.mode = self._get_mode()
+        self.quantity = automaton.strategy['fixed_quantity']
+        self.fix = automaton.strategy['fix_trend']
 
-    def complete(self, fix=False):
+    def complete(self):
         Client().refresh()
         poss = [pos for pos in Client().api.positions if pos.instrument == self.symbol]
         if self.mode == ACTIONS.BUY:
-            if fix:  # if requested to fix
+            if self.fix:  # if requested to fix
                 self._fix_trend(poss, 'sell')
-            Client().open_pos(self.symbol, 'buy', self.quantity)
+            self.open()
         elif self.mode == ACTIONS.SELL:
-            if fix:  # if requested to fix
+            if self.fix:  # if requested to fix
                 self._fix_trend(poss, 'buy')
+            self.open()
+        logger.debug("transaction completed")
+
+    def open(self):
+        if not self.auto.preserver.check_margin(self.symbol, self.quantity):
+            logger.warning("Transaction can't be executed due to missing funds")
+        if self.mode == ACTIONS.BUY:
+            Client().open_pos(self.symbol, 'buy', self.quantity)
+        if self.mode == ACTIONS.SELL:
             Client().open_pos(self.symbol, 'sell', self.quantity)
+
+    def _get_mode(self):
+        return self.auto.predicter.predict(
+            self.symbol, self.auto.strategy['count'], self.auto.strategy['timeframe'])
 
     def _fix_trend(self, poss, mode):
         pos_left = [x for x in poss if x.mode == mode]  # get position of mode

@@ -9,6 +9,7 @@ Locals utils in automate model.
 import logging
 import time
 from enum import Enum, auto
+from threading import Thread
 
 logger = logging.getLogger('forecaster.automate.utils')
 
@@ -29,3 +30,18 @@ def wait(timeout, event):
     start = time.time()
     while time.time() - start <= timeout and event.is_set():
         time.sleep(0.1)
+
+
+class LogThread(Thread):
+    """Thread class to handle errors"""
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._real_run = self.run
+        self.run = self._wrap_run
+
+    def _wrap_run(self):
+        try:
+            self._real_run()
+        except Exception as e:
+            logging.exception("Exception in thread: %s" % e)
