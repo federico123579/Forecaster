@@ -12,7 +12,7 @@ import time
 from threading import Event
 
 from forecaster.automate.positioner import Positioner
-from forecaster.automate.utils import wait, wait_precisely, LogThread
+from forecaster.automate.utils import LogThread, wait, wait_precisely
 from forecaster.handler import Client
 from forecaster.utils import ACTIONS, TIMEFRAME, StaterChainer, read_strategy
 

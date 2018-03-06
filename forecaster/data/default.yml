@@ -35,8 +35,8 @@ checkers:
   relative:
     activate:         True
     sleep:            60
-    gain:             0.002
-    loss:             0.005
+    gain:             0.001
+    loss:             0.004
     avg:
       timeframe:      1h
       count:          5
