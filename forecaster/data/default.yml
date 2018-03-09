@@ -1,6 +1,6 @@
 # --[ HANDLER ]--
 handler:
-  mode:               demo
+  mode:               live
 
 # --[ TELEGRAM ]--
 mediator:             None
@@ -11,15 +11,15 @@ predicter:
 
 # --[ SECURITY ]--
 preserver:
-  funds_risk: 0.5
+  funds_risk: 0.75
 
 # --[ AUTOMATON ]--
 automaton:
-  sleep_transactions: 3600
+  sleep_transactions: 18000
   timeframe:          1h
   count:              5
   fix_trend:          True
-  fixed_quantity:     12500
+  fixed_quantity:     5000
   currencies:
     - EURUSD_ZERO
     - USDJPY_ZERO
@@ -33,10 +33,10 @@ positioner:           None
 # [ CHECKERS ]
 checkers:
   relative:
-    activate:         True
-    sleep:            60
-    gain:             0.001
-    loss:             0.004
+    activate:         False
+    sleep:            600
+    gain:             0.005
+    loss:             0.005
     avg:
       timeframe:      1h
       count:          5
