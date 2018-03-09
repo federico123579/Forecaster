@@ -1,9 +1,9 @@
 # --[ HANDLER ]--
 handler:
-  mode:               demo
+  mode:               live
 
 # --[ TELEGRAM ]--
-mediator:             None
+mediator:             null
 
 # --[ MEAN ]--
 predicter:
@@ -11,15 +11,15 @@ predicter:
 
 # --[ SECURITY ]--
 preserver:
-  funds_risk: 0.5
+  funds_risk: 0.65
 
 # --[ AUTOMATON ]--
 automaton:
-  sleep_transactions: 3600
+  sleep_transactions: 18000
   timeframe:          1h
   count:              5
-  fix_trend:          True
-  fixed_quantity:     12500
+  fix_trend:          true
+  fixed_quantity:     5000
   currencies:
     - EURUSD_ZERO
     - USDJPY_ZERO
@@ -28,24 +28,24 @@ automaton:
     - USDCAD_ZERO
 
 # -[ POSITIONER ]-
-positioner:           None
+positioner:           null
 
 # [ CHECKERS ]
 checkers:
   relative:
-    activate:         True
-    sleep:            60
-    gain:             0.001
-    loss:             0.004
+    activate:         false
+    sleep:            600
+    gain:             0.005
+    loss:             0.005
     avg:
       timeframe:      1h
       count:          5
   reversion:
-    activate:         False
+    activate:         false
     timeframe:        1h
     sleep:            60
   fixed:
-    activate:         False
+    activate:         false
     sleep:            60
     gain:             20
     loss:             -5
@@ -53,6 +53,6 @@ checkers:
 # [ FILTER ]
 filter:
   damper:
-    activate:         False
+    activate:         false
     max:              5
     timeout:          600
