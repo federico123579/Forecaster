@@ -56,6 +56,7 @@ class Client(metaclass=Singleton):
         while STATE is not True:
             try:
                 self.api.open_position(mode, symbol, quantity)
+                logger.debug("opened position: %s - %s - %s" % (mode, symbol, quantity))
                 STATE = True
             except PriceChangedException as e:
                 continue
