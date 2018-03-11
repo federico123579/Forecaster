@@ -15,6 +15,7 @@ setup(
         'pyyaml',
         'trading212-api',
         'python-telegram-bot',
+        'raven',
     ],
     include_package_data=True,
     package_data={'': ['logs/.gitkeep', '**/*.yml']},

@@ -9,14 +9,14 @@ Handle telegram requests and interface with the service.
 import logging
 
 import telegram
-from telegram import Bot
 from telegram.error import TimedOut
 from telegram.ext import (CommandHandler, ConversationHandler, MessageHandler,
                           Updater)
 from telegram.ext.filters import Filters
 
 from forecaster.handler import Client
-from forecaster.utils import EVENTS, Chainer, get_yaml, save_yaml
+from forecaster.patterns import Chainer
+from forecaster.utils import get_yaml, save_yaml
 
 logger = logging.getLogger('forecaster.mediate.telegram')
 
@@ -24,58 +24,63 @@ logger = logging.getLogger('forecaster.mediate.telegram')
 class TelegramMediator(Chainer):
     """telegram interface"""
 
-    def __init__(self, token, successor=None):
-        super().__init__(successor)
-        self.bot = Bot(token=token)
+    def __init__(self, token, proxy):
+        super().__init__(proxy)
+        self.bot = telegram.Bot(token=token)
         self.updater = Updater(token=token)
         self.dispatcher = self.updater.dispatcher
+        self._handlers = []
 
-    def handle_request(self, event):
-        self.pass_request(event)
+    def handle_request(self, event, **kw):
+        self.pass_request(event, **kw)
 
     def activate(self):
-        """list connections"""
-        handlers = []  # append every command
-        handlers.append(ConversationHandler(
+        """listen to connections"""
+        # conversations
+        self._handlers.append(ConversationHandler(
             entry_points=[CommandHandler('config', self.cmd_config)],
             states={'username_key':
                     [MessageHandler(Filters.text, self.username_key, pass_chat_data=True)],
                     'password_key':
                     [MessageHandler(Filters.text, self.password_key, pass_chat_data=True)]},
             fallbacks=[CommandHandler('cancel', ConversationHandler.END)]))
-        handlers.append(CommandHandler('results', self.cmd_results))
-        handlers.append(CommandHandler('valued', self.cmd_valued))
-        handlers.append(CommandHandler('start', self.cmd_start))
-        handlers.append(CommandHandler('stop', self.cmd_stop))
-        handlers.append(CommandHandler('restart', self.cmd_restart))
-        for hand in handlers:
+        # simple commands
+        self._add_command('results', self.cmd_results)
+        self._add_command('valued', self.cmd_valued)
+        self._add_command('closeall', self.cmd_close_all)
+        self._add_command('start', self.cmd_start)
+        self._add_command('stop', self.cmd_stop)
+        self._add_command('restart', self.cmd_restart)
+        for hand in self._handlers:
             self.dispatcher.add_handler(hand)
-        self.updater.start_polling()  # listen connections
+        self.updater.start_polling()  # listen to connections
         logger.debug("Telegram listening")
+
+    def _add_command(self, name, func):
+        self._handlers.append(CommandHandler(name, func))
 
     def deactivate(self):
         self.updater.stop()
+        logger.debug("Telegram stopped")
 
     def cmd_start(self, bot, update):
         logger.debug("start command caught")
         self.chat_id = update.message.chat_id
-        update.message.reply_text("Starting...")
-        self.handle_request(EVENTS.START_BOT)
+        self.handle_request('start_bot')
         update.message.reply_text("Bot started")
 
     def cmd_stop(self, bot, update):
         logger.debug("stop command caught")
         self.renew_connection()
-        update.message.reply_text("Stopping...")
-        self.handle_request(EVENTS.STOP_BOT)
+        self.handle_request('stop_bot')
         update.message.reply_text("Bot stopped")
 
     def cmd_restart(self, bot, update):
         logger.debug("restart command caught")
         self.renew_connection()
         update.message.reply_text("Restarting...")
-        self.handle_request(EVENTS.STOP_BOT)
-        self.handle_request(EVENTS.START_BOT)
+        self.handle_request('stop_bot')
+        self.handle_request('start_bot')
         update.message.reply_text("Bot restarted")
 
     def cmd_config(self, bot, update):
@@ -117,6 +122,18 @@ class TelegramMediator(Chainer):
         self.bot.send_message(chat_id=self.chat_id, text=text,
                               parse_mode=telegram.ParseMode.MARKDOWN)
 
+    def cmd_close_all(self, bot, update):
+        logger.debug("close_all command caught")
+        self.renew_connection()
+        Client.refresh()
+        logger.info("closing all positions")
+        old_results = Client().RESULTS
+        Client().close_all()
+        profit = Client().RESULTS - old_results
+        logger.info("profit: %.2f" % profit)
+        text = "Closed all positions with profit of %.2f" % profit
+        update.message.reply_text(text=text, parse_mode=telegram.ParseMode.MARKDOWN)
+
     def config_needed(self):
         logger.debug("configuration needed")
         self.bot.send_message(chat_id=self.chat_id, text="Configuration needed to continue")
@@ -136,7 +153,6 @@ class TelegramMediator(Chainer):
             try:
                 # get chat info to renew connection
                 self.bot.getChat(chat_id=self.chat_id, timeout=1)
-                return
             except TimedOut as e:
                 logger.error("Telegram timed out, renewing")
                 timeout -= 1

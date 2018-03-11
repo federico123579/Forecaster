@@ -4,7 +4,7 @@
 forecaster.automate.automaton
 ~~~~~~~~~~~~~~
 
-Facade class to automate algorithms.
+Proxy class to automate algorithms.
 """
 
 import logging
@@ -13,29 +13,32 @@ from threading import Event
 
 from forecaster.automate.positioner import Positioner
 from forecaster.automate.utils import LogThread, wait, wait_precisely
+from forecaster.enums import TIMEFRAME
 from forecaster.handler import Client
-from forecaster.utils import ACTIONS, TIMEFRAME, StaterChainer, read_strategy
+from forecaster.patterns import Chainer
+from forecaster.security import Preserver
+from forecaster.utils import read_strategy
 
 logger = logging.getLogger('forecaster.automate')
 
 
-class Automaton(StaterChainer):
+class Automaton(Chainer):
     """main automaton"""
 
-    def __init__(self, strat, predicter, mediator, preserver, successor):
-        super().__init__(successor)
+    def __init__(self, strat, predicter, mediator, bot):
+        super().__init__(bot)
         self.predicter = predicter
         self.mediator = mediator
-        self.preserver = preserver
+        self.preserver = Preserver(strat)
         self.strategy = read_strategy(strat)['automaton']
         time_trans = self.strategy['timeframe']
         self.timeframe = [time_trans, TIMEFRAME[time_trans]]
         self.positioner = Positioner(strat, self.strategy, predicter)
         self.LOOP = Event()
-        self.set_state('READY')
+        logger.debug("AUTOMATON: ready")
 
-    def handle_request(self, event):
-        self.pass_request(event)
+    def handle_request(self, event, **kw):
+        self.pass_request(event, **kw)
 
     def start(self):
         """start threads"""
@@ -43,14 +46,13 @@ class Automaton(StaterChainer):
         LogThread(target=self.check_closes).start()  # check closes
         logger.debug("check_closes thread started")
         self.positioner.start()
-        logger.debug("positioner started")
-        self.set_state('POWERED_ON')
+        logger.debug("AUTOMATON: started")
 
     def stop(self):
         """stop threads"""
         self.positioner.stop()
         self.LOOP.clear()
-        self.set_state('POWERED_OFF')
+        logger.debug("AUTOMATON: stopped")
 
     def check_closes(self):
         """loop check closes"""

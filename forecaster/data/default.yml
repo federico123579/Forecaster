@@ -1,6 +1,6 @@
 # --[ HANDLER ]--
 handler:
-  mode:               live
+  mode:               demo
 
 # --[ TELEGRAM ]--
 mediator:             None
@@ -33,7 +33,7 @@ positioner:           None
 # [ CHECKERS ]
 checkers:
   relative:
-    activate:         False
+    activate:         true
     sleep:            600
     gain:             0.005
     loss:             0.005

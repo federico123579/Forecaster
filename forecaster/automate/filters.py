@@ -11,7 +11,7 @@ import time
 
 from forecaster.automate.utils import ACTIONS
 from forecaster.handler import Client
-from forecaster.utils import Chainer
+from forecaster.patterns import Chainer
 
 logger = logging.getLogger('forecaster.automate.filter')
 
@@ -19,7 +19,8 @@ logger = logging.getLogger('forecaster.automate.filter')
 class FilterWrapper(Chainer):
     """wrapper for filters"""
 
-    def __init__(self, strat):
+    def __init__(self, strat, positioner):
+        super().__init__(positioner)
         self.strat = strat
         self.damper = Damper(strat['damper']['max'], strat['damper']['timeout'])
         logger.debug("FilterWrapper initied")
@@ -29,7 +30,8 @@ class FilterWrapper(Chainer):
             Client().close_pos(kw['pos'])
         elif event == ACTIONS.KEEP:
             logger.debug("keeping position %s" % kw['pos'].id)
-            pass
+        else:
+            self.pass_request(event, **kw)
 
     def check(self, pos):
         if self.strat['damper']['activate']:
@@ -38,6 +40,10 @@ class FilterWrapper(Chainer):
             self.handle_request(ACTIONS.CLOSE, pos=pos)
 
 
+# +----------------------------------------------------------------------+
+# | complexity_level: 1                                                  |
+# | Attend various attemp and amortize                                   |
+# +----------------------------------------------------------------------+
 class Damper(object):
     """damper filter"""
 

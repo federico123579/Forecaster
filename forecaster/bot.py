@@ -7,36 +7,49 @@ forecaster.bot
 
 The Bot Client class.
 """
+
 import logging
+import os
 import time
 
 from forecaster.automate import Automaton
+from forecaster.enums import EVENTS
 from forecaster.exceptions import *
-from forecaster.handler import Client
+from forecaster.handler import Client, SentryClient
 from forecaster.mediate import Mediator
+from forecaster.patterns import Chainer
 from forecaster.predict import Predicter
-from forecaster.security import Preserver
-from forecaster.utils import EVENTS, STATES, StaterChainer, read_strategy
+from forecaster.utils import read_strategy
 
 logger = logging.getLogger('forecaster.bot')
 
 
-class Bot(StaterChainer):
+class Bot(Chainer):
     """main controller"""
 
-    def __init__(self, strat):
+    def __init__(self, strat='default'):
         super().__init__()
         self.strategy = read_strategy(strat)
-        # LEVEL ZERO - access to apis
-        self.handler = Client(strat, self)
+        self._check_enironment()
+        # LEVEL ZERO - access to apis and track errors
+        self.sentry = SentryClient()
+        self.client = Client(strat, self)
         self.mediate = Mediator(strat, self)
         # LEVEL ONE - algorithmic core
         self.predict = Predicter(strat)
         # LEVEL TWO - automation
-        self.security = Preserver(strat)
-        self.automate = Automaton(strat, self.predict, self.mediate, self.security, self)
+        self.automate = Automaton(strat, self.predict, self.mediate, self)
+
+    def _check_enironment(self):
+        """check environment variables"""
+        try:
+            os.environ['FORECASTER_TELEGRAM_TOKEN']
+            os.environ['FORECASTER_SENTRY_TOKEN']
+        except KeyError:
+            raise MissingToken()
 
     def handle_request(self, event, **kw):
+        """handle requests from chainers"""
         if event == EVENTS.START_BOT:
             self.start_bot()
         elif event == EVENTS.STOP_BOT:
@@ -44,37 +57,33 @@ class Bot(StaterChainer):
         elif event == EVENTS.MISSING_DATA:
             self.mediate.need_conf()
         elif event == EVENTS.CLOSED_POS:
-            pos = kw['data']['pos']
+            pos = kw['pos']
             self.mediate.Telegram.close_pos(pos.result)
 
     def start(self):
         """start cycle"""
         # first level: interface for receiving commands
         self.mediate.start()
-        self.set_state('READY')
-        logger.debug("bot listening")
+        logger.debug("BOT: ready")
 
     def stop(self):
         self.automate.stop()
         self.mediate.stop()
-        self.set_state('POWERED_OFF')
+        logger.debug("BOT: shutted down")
 
     def start_bot(self):
         """start bot cycle"""
-        while self.state is not STATES.POWERED_ON:
-            try:
-                # second level: client with APIs
-                self.handler.start()
-                # third level: automation
-                self.automate.start()
-                self.set_state('POWERED_ON')
-            except MissingData as e:
-                self.set_state('MISSING_DATA')
-                self.handle_request(EVENTS.MISSING_DATA)
+        try:
+            self.client.start()
+            self.automate.start()
+            break
+        except MissingData as e:
+            self.handle_request(EVENTS.MISSING_DATA)
+        logger.debug("BOT: started")
 
     def stop_bot(self):
         self.automate.stop()
-        self.set_state('STOPPED')
+        logger.debug("BOT: stopped")
 
 
 def main():
