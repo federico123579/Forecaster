@@ -1,40 +1,42 @@
-#!/usr/bin/env python
-
 """
 forecaster.mediate.mediator
 ~~~~~~~~~~~~~~
 
-Facade class to mediate between client and server.
+Proxy class to mediate between client and server.
 """
 
 import logging
+import os
 
+from forecaster.enums import EVENTS
 from forecaster.mediate.telegram import TelegramMediator
-from forecaster.utils import STATES, StaterChainer, read_strategy
+from forecaster.patterns import Chainer
+from forecaster.utils import read_strategy
 
 logger = logging.getLogger('forecaster.mediate')
 
 
-class Mediator(StaterChainer):
+class Mediator(Chainer):
     """main mediator"""
 
-    def __init__(self, strat, successor):
-        super().__init__(successor)
+    def __init__(self, strat, bot=None):
+        super().__init__(bot)
         self.strategy = read_strategy(strat)['mediator']
-        self.security = read_strategy('security')
-        self.Telegram = TelegramMediator(self.security['telegram-token'], successor)
-        self.set_state('READY')
+        token = os.environ['FORECASTER_TELEGRAM_TOKEN']
+        self.Telegram = TelegramMediator(token, bot)
+        logger.debug("MEDIATOR: ready")
 
-    def handle_request(self, event):
-        self.pass_request(event)
+    def handle_request(self, event, **kw):
+        self.pass_request(event, **kw)
 
     def start(self):
         self.Telegram.activate()
-        self.set_state('POWERED_ON')
+        logger.debug("MEDIATOR: started")
 
     def stop(self):
         self.Telegram.deactivate()
-        self.set_state('POWERED_OFF')
+        logger.debug("MEDIATOR: stopped")
 
     def need_conf(self):
         self.Telegram.config_needed()
+        logger.warning("MEDIATOR: need config")

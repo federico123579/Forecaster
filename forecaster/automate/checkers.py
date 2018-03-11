@@ -8,16 +8,18 @@ Contains all position checkers.
 Every Checker is evalued with a complexity_level that define the level of
 complexity of operations.
 """
+
 import abc
 import logging
 import time
-from enum import Enum
 from threading import Event
 
 from forecaster.automate.utils import ACTIONS, LogThread, wait_precisely
+from forecaster.enums import TIMEFRAME
 from forecaster.handler import Client
+from forecaster.patterns import Chainer
 from forecaster.predict.utils import AverageTrueRange
-from forecaster.utils import TIMEFRAME, Chainer, read_strategy
+from forecaster.utils import read_strategy
 
 logger = logging.getLogger('forecaster.automate.checker')
 
@@ -32,8 +34,8 @@ class PositionChecker(Chainer, metaclass=abc.ABCMeta):
         self.active = Event()
         logger.debug("%s initied" % self.__class__.__name__)
 
-    def handle_request(self, event, **kwargs):
-        self.pass_request(event, **kwargs)
+    def handle_request(self, event, **kw):
+        self.pass_request(event, **kw)
 
     @abc.abstractmethod
     def check(self):

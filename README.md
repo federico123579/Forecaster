@@ -16,6 +16,21 @@ The algorithm used is the Mean Reversion with this formula:
 
 with `avg` as a **price average**, `mult` for a **costant** and `dev` for a **deviation**. In my tests I found most effective the use of a _linear regression_ as `price average` and a finantial index named _Average True Range_ (that defines volatility) as `deviation`.
 
+## How to install
+
+Install just with pip:
+
+```
+   pip install forecaster
+```
+
+Then run setup.sh to save the tokens needed by the software.
+
+```
+   chmod +x setup.sh
+   ./setup.sh
+```
+
 ## Developing
 
 Will be used these _Design Patterns_:
@@ -30,3 +45,12 @@ Will be used these _Design Patterns_:
 - Trading212 API
 
 The `Bot` uses Telegram APIs to communicate with the user news and receive commands (asyncronously) and Trading212 API to make transactions and drive predictive algorithms.
+
+### Backlog
+To-Do list before the v1.0 release.
+
+- [ ] Tidy up code
+- [ ] Add thread handler
+- [ ] Add more telegram commands
+- [ ] Add market closure time watcher
+- [ ] Add database integration

@@ -17,3 +17,10 @@ class MissingData(Exception):
         msg = "configuration data not found"
         logger.error(msg)
         super().__init__(msg)
+
+
+class MissingToken(Exception):
+    def __init__(self):
+        msg = "tokens not found in environment variables, please run setup.sh first."
+        logger.error(msg)
+        super().__init__(msg)
