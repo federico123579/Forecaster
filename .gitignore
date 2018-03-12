@@ -7,6 +7,7 @@ __pycache__/
 *$py.class
 
 # conf
+tokens.yml
 
 # Distribution / packaging
 .Python

@@ -11,6 +11,8 @@ import time
 from enum import Enum, auto
 from threading import Thread
 
+from forecaster.handler import SentryClient
+
 logger = logging.getLogger('forecaster.automate.utils')
 
 
@@ -45,3 +47,4 @@ class LogThread(Thread):
             self._real_run()
         except Exception as e:
             logging.exception("Exception in thread: %s" % e)
+            SentryClient().captureException()

@@ -13,7 +13,7 @@ from threading import Event
 
 from forecaster.automate.positioner import Positioner
 from forecaster.automate.utils import LogThread, wait, wait_precisely
-from forecaster.enums import TIMEFRAME
+from forecaster.enums import TIMEFRAME, ACTIONS
 from forecaster.handler import Client
 from forecaster.patterns import Chainer
 from forecaster.security import Preserver

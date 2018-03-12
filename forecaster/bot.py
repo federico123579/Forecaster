@@ -9,7 +9,6 @@ The Bot Client class.
 """
 
 import logging
-import os
 import time
 
 from forecaster.automate import Automaton
@@ -30,7 +29,6 @@ class Bot(Chainer):
     def __init__(self, strat='default'):
         super().__init__()
         self.strategy = read_strategy(strat)
-        self._check_enironment()
         # LEVEL ZERO - access to apis and track errors
         self.sentry = SentryClient()
         self.client = Client(strat, self)
@@ -39,14 +37,6 @@ class Bot(Chainer):
         self.predict = Predicter(strat)
         # LEVEL TWO - automation
         self.automate = Automaton(strat, self.predict, self.mediate, self)
-
-    def _check_enironment(self):
-        """check environment variables"""
-        try:
-            os.environ['FORECASTER_TELEGRAM_TOKEN']
-            os.environ['FORECASTER_SENTRY_TOKEN']
-        except KeyError:
-            raise MissingToken()
 
     def handle_request(self, event, **kw):
         """handle requests from chainers"""
@@ -76,7 +66,6 @@ class Bot(Chainer):
         try:
             self.client.start()
             self.automate.start()
-            break
         except MissingData as e:
             self.handle_request(EVENTS.MISSING_DATA)
         logger.debug("BOT: started")

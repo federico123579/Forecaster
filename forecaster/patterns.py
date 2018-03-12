@@ -29,22 +29,22 @@ class Singleton(type):
 
 
 # -[ CHAINER ]-
-class Chainer(metaclass=abc.ABCMeta):
+class Chainer():
     """
     Define an interface for handling requests.
     Implement the successor link.
     """
 
-    def __init__(self, successor=None):
+    def __init__(self, successor=None, **kw):
         self._successor = successor
+        super().__init__(**kw)
 
     def pass_request(self, request, **kwargs):
         if self._successor is not None:
             self._successor.handle_request(request, **kwargs)
 
-    @abc.abstractmethod
     def handle_request(self):
-        pass
+        raise NotImplementedError()
 
 
 # -[ STATER ]-
@@ -55,8 +55,9 @@ class StateContext():
     current state.
     """
 
-    def __init__(self, state):
+    def __init__(self, state, **kw):
         self._state = state
+        super().__init__(**kw)
 
     def set_state(self, state):
         self._state = state

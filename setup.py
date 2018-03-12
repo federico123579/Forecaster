@@ -1,12 +1,12 @@
 from setuptools import find_packages, setup
 
 __AUTHOR__ = "Federico Lolli"
-__VERSION__ = "v0.1a1"
+__version__ = "v0.1a1"
 
 
 setup(
     name="forecaster",
-    version=__VERSION__,
+    version=__version__,
     packages=find_packages(),
     install_requires=[
         'pandas',

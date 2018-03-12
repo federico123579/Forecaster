@@ -15,7 +15,7 @@ import pandas as pd
 from scipy import stats
 
 from forecaster.predict.utils import AverageTrueRange
-from forecaster.utils import ACTIONS
+from forecaster.enums import ACTIONS
 
 logger = logging.getLogger('forecaster.predict.mean_reversion')
 

@@ -9,6 +9,8 @@ import os.path
 
 import yaml
 
+from forecaster.exceptions import MissingToken
+
 
 # +----------------------------------------------------------------------+
 # | UTILITY FUNCTIONS                                                    |
@@ -16,6 +18,14 @@ import yaml
 # read strategy files from data folder
 def read_strategy(name, folders=[]):
     return read_yml(get_yaml(name, folders))
+
+
+# read tokens in tokens.yml
+def read_tokens():
+    try:
+        return read_yml(get_yaml('tokens'))
+    except FileNotFoundError:
+        raise MissingToken()
 
 
 # get yaml path

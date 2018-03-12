@@ -1,9 +1,9 @@
 import logging.config
 import os.path
 
-from .bot import Bot
+from forecaster.__version__ import __version__
 
-__VERSION__ = "v0.1a1"
+from .bot import Bot
 
 logging.config.dictConfig({
     'version': 1,

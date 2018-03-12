@@ -8,24 +8,24 @@ import logging
 
 import raven
 import trading212api
-from forecaster import __VERSION__
+from forecaster import __version__
+from forecaster.enums import EVENTS
 from forecaster.exceptions import MissingData
 from forecaster.patterns import Chainer, Singleton, State, StateContext
-from forecaster.utils import read_strategy
+from forecaster.utils import read_strategy, read_tokens
 from trading212api.exceptions import *
 
 logger = logging.getLogger('forecaster.handler')
 mover_logger = logging.getLogger('mover')
 
 
-class Client(metaclass=Singleton):
+class Client(Chainer, StateContext, metaclass=Singleton):
     """UI module with APIs"""
 
     def __init__(self, strat='default', bot=None):
-        Chainer.__init__(self, bot)
         self.strategy = read_strategy(strat)['handler']
         curr_state = get_state_mode(self.strategy['mode'])
-        StateContext.__init__(self, curr_state)
+        super().__init__(successor=bot, state=curr_state)
         self.handle_state('init')  # set api
         self.RESULTS = 0.0  # current net profit
         logger.debug("CLIENT: initied")
@@ -66,7 +66,7 @@ class Client(metaclass=Singleton):
         while True:  # handle exceptions
             try:
                 self.api.open_position(mode, symbol, quantity)
-                mover_logger.info("opened position of %d %s on %s" (quantity, symbol, mode))
+                mover_logger.info("opened position of %d %s on %s" % (quantity, symbol, mode))
                 break
             except PriceChangedException as e:
                 continue
@@ -84,8 +84,8 @@ class Client(metaclass=Singleton):
         while True:
             try:
                 self.api.close_position(pos.id)  # close
-                mover_logger.info("closed position %s" pos.id)
-                mover_logger.info("gain: %.2f" pos.result)
+                mover_logger.info("closed position %s" % pos.id)
+                mover_logger.info("gain: %.2f" % pos.result)
                 break
             except NoPriceException as e:
                 logger.warning("NoPriceException caught")
@@ -98,11 +98,11 @@ class Client(metaclass=Singleton):
 
     def close_all(self):
         self.refresh()
-        ids = []
+        poss = []
         for pos in self.api.account.positions:
-            ids.append(pos.id)
-        for id in ids:  # avoid continue refresh
-            self.close_pos(id)
+            poss.append(pos)
+        for pos in poss:  # avoid continue refresh
+            self.close_pos(pos)
 
     def get_last_candles(self, symbol, num, timeframe):
         self.refresh()  # renovate sessions
@@ -115,7 +115,7 @@ class Client(metaclass=Singleton):
             self.api.refresh()
         except RequestError as e:
             logger.warning("API unavaible")
-            self.login()
+            self._auto_login()
             self.api.refresh()
 
     def swap(self):
@@ -141,7 +141,7 @@ class ModeState(State):
         self.actions = ['init', 'swap']
 
     def handle(self, context, action):
-        if action not self.actions:
+        if action not in self.actions:
             raise ValueError("actions not permitted")
         if action == 'init':
             context.api = trading212api.Client(self.mode)
@@ -168,12 +168,12 @@ class LiveModeState(ModeState):
         self.context.set_state(DemoModeState())
 
 
-class SentryClient(metaclass=Singleton):
+class SentryClient(raven.Client, metaclass=Singleton):
     """sentry handler to handle exceptions"""
 
     def __init__(self, *args, **kwargs):
-        token = os.environ['FORECASTER_SENTRY_TOKEN']
-        version = __VERSION__.strip('v')
+        token = read_tokens()['sentry']
+        version = __version__.strip('v')
         sample_rate = 1
-        raven.Client.__init__(self, token, version, *args, **kwargs)
+        super().__init__(token, version, *args, **kwargs)
         logger.debug("SENTRY: initied")

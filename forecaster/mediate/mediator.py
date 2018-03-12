@@ -6,12 +6,11 @@ Proxy class to mediate between client and server.
 """
 
 import logging
-import os
 
 from forecaster.enums import EVENTS
 from forecaster.mediate.telegram import TelegramMediator
 from forecaster.patterns import Chainer
-from forecaster.utils import read_strategy
+from forecaster.utils import read_strategy, read_tokens
 
 logger = logging.getLogger('forecaster.mediate')
 
@@ -22,7 +21,7 @@ class Mediator(Chainer):
     def __init__(self, strat, bot=None):
         super().__init__(bot)
         self.strategy = read_strategy(strat)['mediator']
-        token = os.environ['FORECASTER_TELEGRAM_TOKEN']
+        token = read_tokens()['telegram']
         self.Telegram = TelegramMediator(token, bot)
         logger.debug("MEDIATOR: ready")
 
