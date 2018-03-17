@@ -1,6 +1,6 @@
 # --[ HANDLER ]--
 handler:
-  mode:               live
+  mode:               demo
 
 # --[ TELEGRAM ]--
 mediator:             null

@@ -49,6 +49,9 @@ class Bot(Chainer):
         elif event == EVENTS.CLOSED_POS:
             pos = kw['pos']
             self.mediate.Telegram.close_pos(pos.result)
+        elif event == EVENTS.CHANGE_MODE:
+            mode = kw['mode']
+            Client().handle_request(event, mode=mode)
 
     def start(self):
         """start cycle"""
@@ -60,6 +63,10 @@ class Bot(Chainer):
         self.automate.stop()
         self.mediate.stop()
         logger.debug("BOT: shutted down")
+
+    def idle(self):
+        logger.debug("BOT: idling")
+        self.mediate.idle()
 
     def start_bot(self):
         """start bot cycle"""
@@ -80,8 +87,7 @@ def main():
         logging.getLogger('forecaster').setLevel(logging.DEBUG)
         bot = Bot('default')
         bot.start()
-        while True:
-            time.sleep(2)
+        bot.idle()
     except KeyboardInterrupt:
         logger.debug("exiting")
         bot.stop()

@@ -39,3 +39,7 @@ class Mediator(Chainer):
     def need_conf(self):
         self.Telegram.config_needed()
         logger.warning("MEDIATOR: need config")
+
+    def idle(self):
+        logger.debug("idling...")
+        self.Telegram.updater.idle()

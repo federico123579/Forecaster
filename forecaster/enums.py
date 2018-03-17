@@ -13,6 +13,7 @@ class EVENTS(Enum):
     STOP_BOT = auto()
     MISSING_DATA = auto()
     CLOSED_POS = auto()
+    CHANGE_MODE = auto()
 
 
 class ACTIONS(Enum):

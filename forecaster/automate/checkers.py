@@ -32,7 +32,7 @@ class PositionChecker(Chainer, metaclass=abc.ABCMeta):
         super().__init__(successor)
         self.sleep_time = sleep_time
         self.active = Event()
-        logger.debug("%s initied" % self.__class__.__name__)
+        logger.debug("{!s} initied".format(self.__class__.__name__))
 
     def handle_request(self, event, **kw):
         self.pass_request(event, **kw)
@@ -55,11 +55,11 @@ class PositionChecker(Chainer, metaclass=abc.ABCMeta):
     def start(self):
         self.active.set()
         LogThread(target=self.run).start()
-        logger.debug("%s started" % self.__class__.__name__)
+        logger.debug("{!s} started".format(self.__class__.__name__))
 
     def stop(self):
         self.active.clear()
-        logger.debug("%s stopped" % self.__class__.__name__)
+        logger.debug("{!s} stopped".format(self.__class__.__name__))
 
 
 # +----------------------------------------------------------------------+
@@ -89,8 +89,8 @@ class RelativeChecker(PositionChecker):
         # closer to 1 cross the limit, as it goes down the loss increases
         progress = -(fav_price - curr_price) / (fav_price - pos_price) + 1
         unprogress = -(unfav_price - curr_price) / (unfav_price - pos_price) + 1
-        logger.debug("progress to profit %.2f%%" % (100 * progress))
-        logger.debug("progress to loss %.2f%%" % (100 * unprogress))
+        logger.debug("progress to profit {:.2f}%%".format(100 * progress))
+        logger.debug("progress to loss {:.2f}%%".format(100 * unprogress))
         if progress >= 1 or unprogress >= 1:
             return 'CLOSE'
         else:
@@ -133,7 +133,7 @@ class FixedChecker(PositionChecker):
     def check(self, position):
         profit = position.result
         if profit >= self.gain or profit <= self.loss:
-            logger.debug("position profit %.2f" % profit)
+            logger.debug("position profit {:.2f}".format(profit))
             return 'CLOSE'
 
 

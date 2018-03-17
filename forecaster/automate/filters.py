@@ -29,7 +29,7 @@ class FilterWrapper(Chainer):
         if event == ACTIONS.CLOSE:
             Client().close_pos(kw['pos'])
         elif event == ACTIONS.KEEP:
-            logger.debug("keeping position %s" % kw['pos'].id)
+            logger.debug("keeping position {}".format(kw['pos'].id))
         else:
             self.pass_request(event, **kw)
 
@@ -59,11 +59,11 @@ class Damper(object):
         if self.positions[pos.id] > 0 and pos.result <= 0:  # if negative and other tries
             time_elaps = time.time() - self.times[pos.id]
             if time_elaps < self.timeout:  # if short time
-                logger.debug("time left: %d seconds" % (self.timeout - time_elaps))
+                logger.debug("time left: {} seconds".format(self.timeout - time_elaps))
                 return ACTIONS.KEEP
             self.positions[pos.id] -= 1  # countdown
             self.times[pos.id] = time.time()  # set timeout time
-            logger.debug("keep left for %s: %d" % (pos.instrument, self.positions[pos.id]))
+            logger.debug("keep left for {}: {}".format(pos.instrument, self.positions[pos.id]))
             return ACTIONS.KEEP
         else:
             del self.positions[pos.id]

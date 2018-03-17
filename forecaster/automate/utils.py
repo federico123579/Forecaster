@@ -28,7 +28,7 @@ def wait_precisely(timeout, start_time, event):
 
 def wait(timeout, event):
     """wait until loop or timeout clears"""
-    logger.debug("sleeping for %d seconds" % int(timeout))
+    logger.debug("sleeping for {} seconds".format(int(timeout)))
     start = time.time()
     while time.time() - start <= timeout and event.is_set():
         time.sleep(0.1)
@@ -46,5 +46,5 @@ class LogThread(Thread):
         try:
             self._real_run()
         except Exception as e:
-            logging.exception("Exception in thread: %s" % e)
+            logging.exception("Exception in thread: {}".format(e))
             SentryClient().captureException()

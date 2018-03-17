@@ -32,7 +32,14 @@ class Client(Chainer, StateContext, metaclass=Singleton):
 
     def handle_request(self, event, **kw):
         """pattern function"""
-        self.pass_request(event, **kw)
+        if event == EVENTS.CHANGE_MODE:
+            mode = kw['mode']
+            if self._state.mode != mode:
+                logger.info("CLIENT: switching mode from {} to {}".format(self._state.mode, mode))
+                self.swap()
+                logger.info("CLIENT: current mode: {}".format(self._state.mode))
+        else:
+            self.pass_request(event, **kw)
 
     def start(self):
         """start from credentials in data file"""
@@ -56,7 +63,7 @@ class Client(Chainer, StateContext, metaclass=Singleton):
         try:
             self.api.login(username, password)
         except InvalidCredentials as e:
-            logger.error("Invalid credentials with %s" % e.username)
+            logger.error("Invalid credentials with {}".format(e.username))
             self.handle_request(EVENTS.MISSING_DATA)
         logger.debug("CLIENT: logged in")
 
@@ -66,7 +73,7 @@ class Client(Chainer, StateContext, metaclass=Singleton):
         while True:  # handle exceptions
             try:
                 self.api.open_position(mode, symbol, quantity)
-                mover_logger.info("opened position of %d %s on %s" % (quantity, symbol, mode))
+                mover_logger.info("opened position of {:d} {} on {}".format(quantity, symbol, mode))
                 break
             except PriceChangedException as e:
                 continue
@@ -84,8 +91,8 @@ class Client(Chainer, StateContext, metaclass=Singleton):
         while True:
             try:
                 self.api.close_position(pos.id)  # close
-                mover_logger.info("closed position %s" % pos.id)
-                mover_logger.info("gain: %.2f" % pos.result)
+                mover_logger.info("closed position {}".format(pos.id))
+                mover_logger.info("gain: {:.2f}".format(pos.result))
                 break
             except NoPriceException as e:
                 logger.warning("NoPriceException caught")
@@ -120,7 +127,12 @@ class Client(Chainer, StateContext, metaclass=Singleton):
 
     def swap(self):
         """swap mode"""
-        self.handle_state('swap')
+        try:
+            self.handle_state('swap')
+            self.handle_state('init')
+            self._auto_login()
+        except Exception as e:
+            logger.exception(e)
 
 
 def get_state_mode(mode):
@@ -157,7 +169,7 @@ class DemoModeState(ModeState):
         super().__init__('demo')
 
     def swap(self, context):
-        self.context.set_state(LiveModeState())
+        context.set_state(LiveModeState())
 
 
 class LiveModeState(ModeState):
@@ -165,7 +177,7 @@ class LiveModeState(ModeState):
         super().__init__('live')
 
     def swap(self, context):
-        self.context.set_state(DemoModeState())
+        context.set_state(DemoModeState())
 
 
 class SentryClient(raven.Client, metaclass=Singleton):
@@ -174,6 +186,6 @@ class SentryClient(raven.Client, metaclass=Singleton):
     def __init__(self, *args, **kwargs):
         token = read_tokens()['sentry']
         version = __version__.strip('v')
-        sample_rate = 1
-        super().__init__(token, version, *args, **kwargs)
+        env = 'developing'
+        super().__init__(dsn=token, release=version, environment=env, *args, **kwargs)
         logger.debug("SENTRY: initied")

@@ -1,6 +1,3 @@
-pub.sh
-pub_Scripts/
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -8,6 +5,8 @@ __pycache__/
 
 # conf
 tokens.yml
+data.yml
+*.log.*
 
 # Distribution / packaging
 .Python
@@ -28,8 +27,6 @@ wheels/
 *.lock
 .ipynb*
 *.h5
-data.yml
-*.log.*
 
 # Installer logs
 pip-log.txt
@@ -43,9 +40,6 @@ htmlcov/
 .cache
 *.log
 nosetests.xml
-
-# Sphinx documentation
-docs/_build/
 
 # virtualenv
 .venv
