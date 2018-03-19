@@ -13,7 +13,7 @@ import time
 
 from forecaster.automate import Automaton
 from forecaster.enums import EVENTS
-from forecaster.exceptions import *
+from forecaster.exceptions import MissingData
 from forecaster.handler import Client, SentryClient
 from forecaster.mediate import Mediator
 from forecaster.patterns import Chainer
@@ -73,7 +73,7 @@ class Bot(Chainer):
         try:
             self.client.start()
             self.automate.start()
-        except MissingData as e:
+        except MissingData:
             self.handle_request(EVENTS.MISSING_DATA)
         logger.debug("BOT: started")
 

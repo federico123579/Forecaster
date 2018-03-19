@@ -4,16 +4,18 @@ forecaster.handler
 
 Handle requests and responses from API
 """
+
 import logging
+import time
 
 import raven
 import trading212api
+
 from forecaster import __version__
 from forecaster.enums import EVENTS
 from forecaster.exceptions import MissingData
 from forecaster.patterns import Chainer, Singleton, State, StateContext
 from forecaster.utils import read_strategy, read_tokens
-from trading212api.exceptions import *
 
 logger = logging.getLogger('forecaster.handler')
 mover_logger = logging.getLogger('mover')
@@ -26,6 +28,7 @@ class Client(Chainer, StateContext, metaclass=Singleton):
         self.strategy = read_strategy(strat)['handler']
         curr_state = get_state_mode(self.strategy['mode'])
         super().__init__(successor=bot, state=curr_state)
+        self.api = None
         self.handle_state('init')  # set api
         self.RESULTS = 0.0  # current net profit
         logger.debug("CLIENT: initied")
@@ -35,9 +38,11 @@ class Client(Chainer, StateContext, metaclass=Singleton):
         if event == EVENTS.CHANGE_MODE:
             mode = kw['mode']
             if self._state.mode != mode:
-                logger.info("CLIENT: switching mode from {} to {}".format(self._state.mode, mode))
+                logger.info("CLIENT: switching mode from {} to {}".format(
+                    self._state.mode, mode))
                 self.swap()
-                logger.info("CLIENT: current mode: {}".format(self._state.mode))
+                logger.info(
+                    "CLIENT: current mode: {}".format(self._state.mode))
         else:
             self.pass_request(event, **kw)
 
@@ -62,7 +67,7 @@ class Client(Chainer, StateContext, metaclass=Singleton):
         """log in trading212"""
         try:
             self.api.login(username, password)
-        except InvalidCredentials as e:
+        except trading212api.exceptions.InvalidCredentials as e:
             logger.error("Invalid credentials with {}".format(e.username))
             self.handle_request(EVENTS.MISSING_DATA)
         logger.debug("CLIENT: logged in")
@@ -73,14 +78,15 @@ class Client(Chainer, StateContext, metaclass=Singleton):
         while True:  # handle exceptions
             try:
                 self.api.open_position(mode, symbol, quantity)
-                mover_logger.info("opened position of {:d} {} on {}".format(quantity, symbol, mode))
+                mover_logger.info(
+                    "opened position of {:d} {} on {}".format(quantity, symbol, mode))
                 break
-            except PriceChangedException as e:
+            except trading212api.exceptions.PriceChangedException:
                 continue
-            except MaxQuantityExceeded as e:
+            except trading212api.exceptions.MaxQuantityExceeded:
                 logger.warning("Maximum quantity exceeded")
                 break
-            except ProductNotAvaible as e:
+            except trading212api.exceptions.ProductNotAvaible:
                 logger.warning("Product not avaible")
                 SentryClient().captureException()
                 break
@@ -94,10 +100,10 @@ class Client(Chainer, StateContext, metaclass=Singleton):
                 mover_logger.info("closed position {}".format(pos.id))
                 mover_logger.info("gain: {:.2f}".format(pos.result))
                 break
-            except NoPriceException as e:
+            except trading212api.exceptions.NoPriceException:
                 logger.warning("NoPriceException caught")
-                SentryClient().captureException()
-            except ValueError as e:
+                time.sleep(1)  # waiting 1 second
+            except ValueError:
                 logger.warning("Position not found")
                 break
         self.RESULTS += pos.result  # update returns
@@ -120,19 +126,16 @@ class Client(Chainer, StateContext, metaclass=Singleton):
     def refresh(self):
         try:
             self.api.refresh()
-        except RequestError as e:
+        except trading212api.exceptions.RequestError:
             logger.warning("API unavaible")
             self._auto_login()
             self.api.refresh()
 
     def swap(self):
         """swap mode"""
-        try:
-            self.handle_state('swap')
-            self.handle_state('init')
-            self._auto_login()
-        except Exception as e:
-            logger.exception(e)
+        self.handle_state('swap')
+        self.handle_state('init')
+        self._auto_login()
 
 
 def get_state_mode(mode):
@@ -160,7 +163,7 @@ class ModeState(State):
         if action == 'swap':
             self.swap(context)
 
-    def swap(self):
+    def swap(self, context):
         raise NotImplementedError()
 
 
