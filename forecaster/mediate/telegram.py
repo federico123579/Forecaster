@@ -120,6 +120,7 @@ class TelegramMediator(Chainer):
             - /help: print this
             - /start: start the bot
             - /stop: stop the bot
+            - /config: start the configuration
             - /shutdown: shut the bot
             - /restart: restart the bot
             - /results: print the results from start
