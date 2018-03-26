@@ -17,7 +17,7 @@ class TestClient():
         Client().refresh()
 
     def test_open_pos(self):
-        Client().open_pos('EURUSD', 'buy', 5000)
+        Client().open_pos('EURUSD_ZERO', 'buy', 5000)
 
     def test_close_pos(self):
         pos = Client().api.positions[-1]
