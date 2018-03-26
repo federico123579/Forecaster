@@ -78,14 +78,14 @@ def make_dirs(path):
 # get configuration
 def get_conf():
     config = configparser.ConfigParser()
-    path = os.path.join(os.path.dirname(__file__), 'config.ini')
+    path = os.path.join(os.path.dirname(__file__), 'data', 'config.ini')
     config.read(path)
     return config
 
 
 # save configuration
 def save_conf(config):
-    path = os.path.join(os.path.dirname(__file__), 'config.ini')
+    path = os.path.join(os.path.dirname(__file__), 'data', 'config.ini')
     with open(path, 'w') as configfile:
         config.write(configfile)
 
