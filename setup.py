@@ -16,6 +16,7 @@ setup(
         'trading212-api',
         'python-telegram-bot',
         'raven',
+        'termcolor',
     ],
     include_package_data=True,
     package_data={'': ['logs/.gitkeep', '**/*.yml']},
@@ -28,7 +29,7 @@ setup(
     url="https://github.com/federico123579/forecaster",
     entry_points={
         'console_scripts': [
-            'forecaster = forecaster.bot:main'
+            'forecaster = forecaster.__main__:main'
         ]
     },
     classifiers=[
