@@ -2,10 +2,12 @@
 __pycache__/
 *.py[cod]
 *$py.class
+nohup.out
 
 # conf
+config.ini
 tokens.yml
-data.yml
+data.json
 *.log.*
 .vscode/
 
