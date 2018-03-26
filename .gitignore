@@ -8,7 +8,7 @@ __pycache__/
 nohup.out
 
 # conf
-tokens.yml
+config.ini
 data.json
 .vscode/
 
