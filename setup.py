@@ -18,6 +18,11 @@ setup(
         'raven',
         'termcolor',
     ],
+    test_requirements=[
+        'pytest',
+        'pytest-pep8',
+        'pytest-cov',
+    ],
     include_package_data=True,
     package_data={'': ['logs/.gitkeep', '**/*.yml']},
     zip_safe=False,
