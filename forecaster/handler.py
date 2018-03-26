@@ -10,12 +10,11 @@ import time
 
 import raven
 import trading212api
-
 from forecaster import __version__
 from forecaster.enums import EVENTS
 from forecaster.exceptions import MissingData
 from forecaster.patterns import Chainer, Singleton, State, StateContext
-from forecaster.utils import read_strategy, read_tokens
+from forecaster.utils import read_data, read_strategy, read_tokens
 
 logger = logging.getLogger('forecaster.handler')
 mover_logger = logging.getLogger('mover')
@@ -55,7 +54,7 @@ class Client(Chainer, StateContext, metaclass=Singleton):
     def _get_data(self):
         """get credentials if exist"""
         try:
-            return read_strategy('data')
+            return read_data('data')
         except FileNotFoundError:
             raise MissingData()
 
@@ -135,6 +134,7 @@ class Client(Chainer, StateContext, metaclass=Singleton):
         """swap mode"""
         self.handle_state('swap')
         self.handle_state('init')
+        self.RESULTS = 0.0
         self._auto_login()
 
 

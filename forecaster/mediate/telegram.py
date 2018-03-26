@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 forecaster.mediate.telegram
 ~~~~~~~~~~~~~~
@@ -12,16 +10,16 @@ import logging
 import textwrap
 
 import telegram
+from forecaster.enums import EVENTS
+from forecaster.exceptions import MissingData
+from forecaster.handler import Client
+from forecaster.patterns import Chainer
+from forecaster.utils import get_json, save_json
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.error import TimedOut
 from telegram.ext import (CallbackQueryHandler, CommandHandler,
                           ConversationHandler, MessageHandler, Updater)
 from telegram.ext.filters import Filters
-
-from forecaster.enums import EVENTS
-from forecaster.handler import Client
-from forecaster.patterns import Chainer
-from forecaster.utils import get_yaml, save_yaml
 
 logger = logging.getLogger('forecaster.mediate.telegram')
 
@@ -59,7 +57,8 @@ class TelegramMediator(Chainer):
         self._handlers.append(ConversationHandler(
             entry_points=[CommandHandler('config', self.cmd_config)],
             states={'username_key':
-                    [MessageHandler(Filters.text, self.username_key, pass_chat_data=True)],
+                    [MessageHandler(
+                        Filters.text, self.username_key, pass_chat_data=True)],
                     'password_key':
                     [MessageHandler(Filters.text, self.password_key, pass_chat_data=True)]},
             fallbacks=[CommandHandler('cancel', ConversationHandler.END)]))
@@ -72,6 +71,7 @@ class TelegramMediator(Chainer):
         self._add_command('results', self.cmd_results)
         self._add_command('help', self.cmd_help)
         self._add_command('restart', self.cmd_restart)
+        self._add_command('shutdown', self.cmd_shutdown)
         self._add_command('stop', self.cmd_stop)
         self._add_command('start', self.cmd_start)
         for hand in self._handlers:
@@ -98,6 +98,11 @@ class TelegramMediator(Chainer):
         self.handle_request(EVENTS.STOP_BOT)
         self.send_msg("Bot stopped")
 
+    def cmd_shutdown(self, bot, update):
+        logger.debug("shutdown command caught")
+        self.renew_connection()
+        self.handle_request(EVENTS.SHUTDOWN)
+
     def cmd_restart(self, bot, update):
         logger.debug("restart command caught")
         self.renew_connection()
@@ -115,6 +120,7 @@ class TelegramMediator(Chainer):
             - /help: print this
             - /start: start the bot
             - /stop: stop the bot
+            - /shutdown: shut the bot
             - /restart: restart the bot
             - /results: print the results from start
             - /valued: print current values of transactions
@@ -140,7 +146,7 @@ class TelegramMediator(Chainer):
         chat_data['password'] = update.message.text
         self.credentials['password'] = chat_data['password']
         logger.debug(self.credentials)
-        save_yaml(self.credentials, get_yaml('data'))
+        save_json(self.credentials, get_json('data'))
         del self.credentials
         update.message.reply_text("Configuration saved")
         return ConversationHandler.END
@@ -156,7 +162,8 @@ class TelegramMediator(Chainer):
         Client().refresh()
         result = Client().api.account.funds['result']
         num_pos = len(Client().api.account.positions)
-        self.send_msg("Actual value is *{:.2f}* with *{}* positions".format(result, num_pos))
+        self.send_msg(
+            "Actual value is *{:.2f}* with *{}* positions".format(result, num_pos))
 
     def cmd_close_all(self, bot, update):
         logger.debug("close_all command caught")
@@ -167,7 +174,8 @@ class TelegramMediator(Chainer):
         Client().close_all()
         profit = Client().RESULTS - old_results
         logger.info("profit: {:.2f}".format(profit))
-        self.send_msg("Closed all positions with profit of *{:.2f}*".format(profit))
+        self.send_msg(
+            "Closed all positions with profit of *{:.2f}*".format(profit))
 
     def cmd_change_mode(self, bot, update):
         """change mode command"""
@@ -176,14 +184,15 @@ class TelegramMediator(Chainer):
         button_list = []
         for mode in modes:
             data = {'event': 'change_mode', 'mode': mode}
-            button_list.append(InlineKeyboardButton(mode, callback_data=json.dumps(data)))
+            button_list.append(InlineKeyboardButton(
+                mode, callback_data=json.dumps(data)))
         reply_markup = InlineKeyboardMarkup(build_menu(button_list, n_cols=2))
         self.send_msg("Choose your *mode*:", reply_markup=reply_markup)
 
     def config_needed(self):
         logger.debug("configuration needed")
         self.send_msg("Configuration needed to continue")
-        raise
+        raise MissingData()
 
     def close_pos(self, result):
         logger.debug("close_position telegram")
@@ -203,7 +212,7 @@ class TelegramMediator(Chainer):
                 # get chat info to renew connection
                 self.bot.getChat(chat_id=self.chat_id, timeout=1)
                 break
-            except TimedOut as e:
+            except TimedOut:
                 logger.error("Telegram timed out, renewing")
                 timeout -= 1
         logger.debug("renewed connection")

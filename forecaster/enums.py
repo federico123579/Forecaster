@@ -11,6 +11,7 @@ from enum import Enum, auto
 class EVENTS(Enum):
     START_BOT = auto()
     STOP_BOT = auto()
+    SHUTDOWN = auto()
     MISSING_DATA = auto()
     CLOSED_POS = auto()
     CHANGE_MODE = auto()

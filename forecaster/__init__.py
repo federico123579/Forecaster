@@ -3,7 +3,7 @@ import os.path
 
 from forecaster.__version__ import __version__
 
-from .bot import Bot
+from .bot import Bot, config_bot
 
 logging.config.dictConfig({
     'version': 1,
@@ -47,7 +47,7 @@ logging.config.dictConfig({
         },
         'forecaster': {
             'handlers': ['rotating'],
-            'level': 'CRITICAL'
+            'level': 'DEBUG'
         },
         'mover': {
             'handlers': ['movs_handler'],
