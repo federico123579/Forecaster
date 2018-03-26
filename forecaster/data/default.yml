@@ -1,6 +1,6 @@
 # --[ HANDLER ]--
 handler:
-  mode:               demo
+  mode:               live
 
 # --[ TELEGRAM ]--
 mediator:             null
@@ -15,8 +15,8 @@ preserver:
 
 # --[ AUTOMATON ]--
 automaton:
-  sleep_transactions: 18000
-  timeframe:          1h
+  sleep_transactions: 86400
+  timeframe:          1d
   count:              5
   fix_trend:          true
   fixed_quantity:     5000
