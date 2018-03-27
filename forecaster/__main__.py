@@ -26,10 +26,8 @@ def main():
     # - verbose
     if args.verbose >= 1:
         root_logger.setLevel(logging.DEBUG)
-    if args.quiet >= 1:
+    elif args.quiet >= 1:
         root_logger.setLevel(logging.WARNING)
-    else:
-        root_logger.setLevel(logging.INFO)
     # - config
     if args.config:
         try:
