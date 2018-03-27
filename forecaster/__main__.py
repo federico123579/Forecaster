@@ -19,14 +19,17 @@ def main():
     parser.add_argument('--config', dest="config",
                         action="store_true", help="start config mode")
     parser.add_argument('-v', '--verbose', action="count", default=0)
-    parser.add_argument('--version', action="version", version="%(prog)s 2.0")
+    parser.add_argument('-q', '--quiet', action="count", default=0)
+    parser.add_argument('--version', action="version", version="%(prog)s {}".format(__version__))
     args = parser.parse_args()
     root_logger = logging.getLogger('forecaster')
     # - verbose
-    if args.verbose == 1:
-        root_logger.setLevel(logging.INFO)
-    elif args.verbose > 1:
+    if args.verbose >= 1:
         root_logger.setLevel(logging.DEBUG)
+    if args.quiet >= 1:
+        root_logger.setLevel(logging.WARNING)
+    else:
+        root_logger.setLevel(logging.INFO)
     # - config
     if args.config:
         try:
