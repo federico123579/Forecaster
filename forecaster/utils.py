@@ -2,7 +2,7 @@
 forecaster.utils
 ~~~~~~~~~~~~~~
 
-Contains all the utils of module, patterns and Abstract classes.
+Contains all the utils of module and Abstract classes.
 """
 
 import configparser

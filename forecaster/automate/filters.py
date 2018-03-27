@@ -1,11 +1,10 @@
-#!/usr/bin/env python
-
 """
 forecaster.automate.filters
 ~~~~~~~~~~~~~~
 
 Contains all position filters.
 """
+
 import logging
 import time
 
