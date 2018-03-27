@@ -22,6 +22,7 @@ setup(
         'pytest',
         'pytest-pep8',
         'pytest-cov',
+        'flake8',
     ],
     include_package_data=True,
     package_data={'': ['logs/.gitkeep', '**/*.yml']},
