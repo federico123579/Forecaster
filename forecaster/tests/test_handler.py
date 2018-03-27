@@ -6,9 +6,6 @@ def test_init():
 
 
 class TestClient():
-    def handle_request(self, event, **kw):
-        return event
-
     def test_start(self):
         self._change_mode()
         Client().start()
