@@ -12,6 +12,7 @@ import logging
 import sys
 
 from forecaster.automate import Automaton
+from forecaster.automate.utils import ThreadHandler
 from forecaster.enums import EVENTS
 from forecaster.exceptions import MissingData
 from forecaster.handler import Client, SentryClient
@@ -65,8 +66,8 @@ class Bot(Chainer):
     def stop(self):
         self.automate.stop()
         self.mediate.stop()
+        ThreadHandler().stop_all()
         logger.debug("BOT: shutted down")
-        sys.exit()
 
     def idle(self):
         logger.debug("BOT: idling")

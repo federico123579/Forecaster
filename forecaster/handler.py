@@ -40,6 +40,7 @@ class Client(Chainer, StateContext, metaclass=Singleton):
                 logger.info("CLIENT: switching mode from {} to {}".format(
                     self._state.mode, mode))
                 self.swap()
+                self._auto_login()
                 logger.info(
                     "CLIENT: current mode: {}".format(self._state.mode))
         else:
@@ -135,7 +136,6 @@ class Client(Chainer, StateContext, metaclass=Singleton):
         self.handle_state('swap')
         self.handle_state('init')
         self.RESULTS = 0.0
-        self._auto_login()
 
 
 def get_state_mode(mode):

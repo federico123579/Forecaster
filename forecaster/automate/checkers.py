@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 forecaster.automate.checker
 ~~~~~~~~~~~~~~
@@ -14,12 +12,11 @@ import logging
 import time
 from threading import Event
 
-from forecaster.automate.utils import ACTIONS, LogThread, wait_precisely
+from forecaster.automate.utils import ACTIONS, LogThread, ThreadHandler, wait_precisely
 from forecaster.enums import TIMEFRAME
 from forecaster.handler import Client
 from forecaster.patterns import Chainer
 from forecaster.predict.utils import AverageTrueRange
-from forecaster.utils import read_strategy
 
 logger = logging.getLogger('forecaster.automate.checker')
 
@@ -38,7 +35,7 @@ class PositionChecker(Chainer, metaclass=abc.ABCMeta):
         self.pass_request(event, **kw)
 
     @abc.abstractmethod
-    def check(self):
+    def check(self, *args):
         pass
 
     # main loop
@@ -54,7 +51,10 @@ class PositionChecker(Chainer, metaclass=abc.ABCMeta):
 
     def start(self):
         self.active.set()
-        LogThread(target=self.run).start()
+        ThreadHandler().add_event(self.active)
+        thread = LogThread(target=self.run)
+        thread.start()
+        ThreadHandler().add_thread(thread)
         logger.debug("{!s} started".format(self.__class__.__name__))
 
     def stop(self):
@@ -110,7 +110,7 @@ class ReversionChecker(PositionChecker):
         self.timeframe = strat['timeframe']
 
     def check(self, position):
-        candles = Client().get_last_candles(pos.instrument, self.count, self.timeframe)
+        candles = Client().get_last_candles(position.instrument, self.count, self.timeframe)
         band = self.Meanrev.get_band(candles)
         if position.mode == 'buy' and position.current_price >= band:
             logger.debug("overtaken band")

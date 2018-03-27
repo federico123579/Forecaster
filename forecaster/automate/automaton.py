@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 forecaster.automate.automaton
 ~~~~~~~~~~~~~~
@@ -12,8 +10,8 @@ import time
 from threading import Event
 
 from forecaster.automate.positioner import Positioner
-from forecaster.automate.utils import LogThread, wait, wait_precisely
-from forecaster.enums import TIMEFRAME, ACTIONS
+from forecaster.automate.utils import LogThread, ThreadHandler, wait, wait_precisely
+from forecaster.enums import ACTIONS, TIMEFRAME
 from forecaster.handler import Client
 from forecaster.patterns import Chainer
 from forecaster.security import Preserver
@@ -43,7 +41,10 @@ class Automaton(Chainer):
     def start(self):
         """start threads"""
         self.LOOP.set()
-        LogThread(target=self.check_closes).start()  # check closes
+        ThreadHandler().add_event(self.LOOP)
+        thread = LogThread(target=self.check_closes)  # check closes
+        thread.start()
+        ThreadHandler().add_thread(thread)
         logger.debug("check_closes thread started")
         self.positioner.start()
         logger.debug("AUTOMATON: started")

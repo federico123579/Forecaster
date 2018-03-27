@@ -1,17 +1,17 @@
-#!/usr/bin/env python
-
 """
 forecaster.automate.utils
 ~~~~~~~~~~~~~~
 
 Locals utils in automate model.
 """
+
 import logging
 import time
 from enum import Enum, auto
-from threading import Thread
+from threading import Thread, Event
 
 from forecaster.handler import SentryClient
+from forecaster.patterns import Singleton
 
 logger = logging.getLogger('forecaster.automate.utils')
 
@@ -41,10 +41,55 @@ class LogThread(Thread):
         super().__init__(**kwargs)
         self._real_run = self.run
         self.run = self._wrap_run
+        self._real_join = self.join
+        self.join = self._wrap_join
 
     def _wrap_run(self):
         try:
             self._real_run()
         except Exception as e:
-            logging.exception("Exception in thread: {}".format(e))
+            logger.exception("Exception in thread: {}".format(e))
             SentryClient().captureException()
+
+    def _wrap_join(self, *args, **kwargs):
+        self._real_join(*args, **kwargs)
+        logger.debug("thread: {!s} - joined".format(self))
+
+
+class ThreadHandler(metaclass=Singleton):
+    def __init__(self):
+        self.handlers = []
+        self.events = []
+        logger.debug("ThreadHandler initied")
+
+    def add_thread(self, thr):
+        """add thread"""
+        if thr in self.handlers:
+            logger.debug("thread: {!s} - already added".format(thr))
+            return
+        if isinstance(thr, Thread):
+            self.handlers.append(thr)
+            logger.debug("thread: {!s} - appended".format(thr))
+        else:
+            raise ValueError("{} is not a thread".format(thr))
+
+    def add_event(self, event):
+        """add event"""
+        if event in self.events:
+            logger.debug("event: {!s} - already added".format(event))
+            return
+        if isinstance(event, Event):
+            self.events.append(event)
+            logger.debug("event: {!s} - appended".format(event))
+        else:
+            raise ValueError("{} is not an event".format(event))
+
+    def stop_all(self, timeout=None):
+        """stop all events"""
+        for ev in self.events:
+            ev.clear()
+            logger.debug("event: {!s} - cleared".format(ev))
+        for thr in self.handlers:
+            thr.join(timeout)
+            if not isinstance(thr, LogThread):
+                logger.debug("thread: {!s} - joined".format(thr))
