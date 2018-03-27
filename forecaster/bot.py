@@ -66,6 +66,7 @@ class Bot(Chainer):
         self.automate.stop()
         self.mediate.stop()
         logger.debug("BOT: shutted down")
+        sys.exit()
 
     def idle(self):
         logger.debug("BOT: idling")
