@@ -9,7 +9,8 @@ The Bot Client class.
 """
 
 import logging
-import sys
+import os
+import signal
 
 from forecaster.automate import Automaton
 from forecaster.automate.utils import ThreadHandler
@@ -47,7 +48,6 @@ class Bot(Chainer):
             self.stop_bot()
         elif event == EVENTS.SHUTDOWN:
             self.stop()
-            sys.exit()  # exit from process
         elif event == EVENTS.MISSING_DATA:
             self.mediate.need_conf()
         elif event == EVENTS.CLOSED_POS:
@@ -65,9 +65,10 @@ class Bot(Chainer):
 
     def stop(self):
         self.automate.stop()
-        ThreadHandler().stop_all()
         self.mediate.stop()
+        ThreadHandler().stop_all()
         logger.debug("BOT: shutted down")
+        os.kill(os.getpid(), signal.SIGINT)
 
     def idle(self):
         logger.debug("BOT: idling")

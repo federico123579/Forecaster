@@ -6,6 +6,8 @@ Proxy class to mediate between client and server.
 """
 
 import logging
+import os
+import signal
 
 from forecaster.mediate.telegram import TelegramMediator
 from forecaster.patterns import Chainer
@@ -32,7 +34,8 @@ class Mediator(Chainer):
         logger.debug("MEDIATOR: started")
 
     def stop(self):
-        self.telegram.deactivate()
+        # self.telegram.deactivate()  # BUG
+        os.kill(os.getpid(), signal.SIGINT)
         logger.debug("MEDIATOR: stopped")
 
     def need_conf(self):
