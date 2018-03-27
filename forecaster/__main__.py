@@ -37,8 +37,7 @@ def main():
         finally:
             return
     if args.foreground:
-        path = os.path.join(os.path.dirname(
-            os.path.dirname(__file__)), 'run.sh')
+        path = os.path.join(os.path.dirname(__file__), 'run.sh')
         subprocess.call(path)
         return
     # BOT PROCESSES

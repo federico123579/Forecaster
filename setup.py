@@ -25,7 +25,7 @@ setup(
         'flake8',
     ],
     include_package_data=True,
-    package_data={'': ['logs/.gitkeep', '**/*.yml']},
+    package_data={'': ['logs/.gitkeep', '**/*.yml', 'run.sh']},
     zip_safe=False,
     author="Federico Lolli",
     author_email="federico123579@gmail.com",
