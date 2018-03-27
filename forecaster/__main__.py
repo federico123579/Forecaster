@@ -45,7 +45,6 @@ def main():
     bot = Bot('default')
     try:
         bot.start()
-        bot.idle()
     except KeyboardInterrupt:
         bot.stop()
     except Exception as e:
