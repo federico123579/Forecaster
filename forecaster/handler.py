@@ -35,7 +35,7 @@ class Client(Chainer, StateContext, metaclass=Singleton):
         """pattern function"""
         if event == EVENTS.CHANGE_MODE:
             mode = kw['mode']
-            if self._state.mode != mode:
+            if self.mode != mode:
                 logger.info("CLIENT: switching mode from {} to {}".format(
                     self._state.mode, mode))
                 self.swap()
@@ -47,15 +47,15 @@ class Client(Chainer, StateContext, metaclass=Singleton):
 
     def start(self):
         """start from credentials in data file"""
+        self.data = self._get_data()
         self._auto_login()
         logger.debug("CLIENT: started with data")
 
     def _get_mode(self):
         try:
-            self._get_data()
-        except FileNotFoundError:
+            return self._get_data()['mode']
+        except (MissingData, KeyError):
             return get_conf()['HANDLER']['mode']
-
 
     def _get_data(self):
         """get credentials if exist"""

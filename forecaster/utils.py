@@ -165,7 +165,7 @@ class CLIConfig(object):
             raise ValueError("CONFIG type not exists")
         if self.CONFIG == 'json':
             path = get_json(self.FILE)
-            if self.OVER:
+            if not self.OVER:
                 config = read_json(path)
             else:
                 config = {}
@@ -173,7 +173,7 @@ class CLIConfig(object):
                 config[entry[0]] = entry[1]
             save_json(config, path)
         elif self.CONFIG == 'ini':
-            if self.OVER:
+            if not self.OVER:
                 config = get_conf(self.FILE)
             else:
                 config = {}

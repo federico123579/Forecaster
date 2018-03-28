@@ -33,7 +33,7 @@ def main():
         root_logger.setLevel(logging.WARNING)
     # - config
     if args.config:
-        conf = CLIConfig('tokens', 'config', 'ini', True)
+        conf = CLIConfig('tokens', 'config', 'ini', False)
         conf.add_query_insert(('TOKENS', 'telegram'), 'telegram secret token')
         conf.add_query_insert(('TOKENS', 'sentry'), 'sentry secret token')
         conf.run()
