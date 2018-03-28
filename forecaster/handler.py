@@ -65,11 +65,16 @@ class Client(Chainer, StateContext, metaclass=Singleton):
 
     def login(self, username, password):
         """log in trading212"""
-        try:
-            self.api.login(username, password)
-        except trading212api.exceptions.InvalidCredentials as e:
-            logger.error("Invalid credentials with {}".format(e.username))
-            self.handle_request(EVENTS.MISSING_DATA)
+        while True:
+            try:
+                self.api.login(username, password)
+                break
+            except trading212api.exceptions.InvalidCredentials as e:
+                logger.error("Invalid credentials with {}".format(e.username))
+                self.handle_request(EVENTS.MISSING_DATA)
+            except trading212api.exceptions.LiveNotConfigured:
+                logger.error("{} mode not configured".format(self.mode))
+                self.handle_request(EVENTS.MODE_FAILURE)
         logger.debug("CLIENT: logged in")
 
     def open_pos(self, symbol, mode, quantity):
@@ -160,6 +165,7 @@ class ModeState(State):
             raise ValueError("actions not permitted")
         if action == 'init':
             context.api = trading212api.Client(self.mode)
+            context.mode = self.mode
         if action == 'swap':
             self.swap(context)
 

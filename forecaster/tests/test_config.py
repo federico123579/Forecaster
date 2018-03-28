@@ -1,4 +1,3 @@
-import pytest
 from forecaster.mediate.telegram import TelegramMediator
 from forecaster.utils import get_conf
 from raven import Client

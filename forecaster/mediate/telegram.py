@@ -11,7 +11,6 @@ import textwrap
 
 import telegram
 from forecaster.enums import EVENTS
-from forecaster.exceptions import MissingData
 from forecaster.handler import Client
 from forecaster.patterns import Chainer
 from forecaster.utils import get_json, save_json
@@ -193,7 +192,6 @@ class TelegramMediator(Chainer):
     def config_needed(self):
         logger.debug("configuration needed")
         self.send_msg("Configuration needed to continue")
-        raise MissingData()
 
     def close_pos(self, result):
         logger.debug("close_position telegram")

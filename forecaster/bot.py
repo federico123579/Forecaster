@@ -15,7 +15,6 @@ import signal
 from forecaster.automate import Automaton
 from forecaster.automate.utils import ThreadHandler
 from forecaster.enums import EVENTS
-from forecaster.exceptions import MissingData
 from forecaster.handler import Client, SentryClient
 from forecaster.mediate import Mediator
 from forecaster.patterns import Chainer
@@ -50,6 +49,11 @@ class Bot(Chainer):
             self.stop()
         elif event == EVENTS.MISSING_DATA:
             self.mediate.need_conf()
+        elif event == EVENTS.MODE_FAILURE:
+            log_text = "Mode {} failed to login. Changing mode".format(self.client.mode)
+            logger.warning(log_text)
+            self.mediate.log(log_text)
+            self.client.swap()
         elif event == EVENTS.CLOSED_POS:
             pos = kw['pos']
             self.mediate.Telegram.close_pos(pos.result)
@@ -76,11 +80,8 @@ class Bot(Chainer):
 
     def start_bot(self):
         """start bot cycle"""
-        try:
-            self.client.start()
-            self.automate.start()
-        except MissingData:
-            self.handle_request(EVENTS.MISSING_DATA)
+        self.client.start()
+        self.automate.start()
         logger.debug("BOT: started")
 
     def stop_bot(self):
