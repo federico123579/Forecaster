@@ -20,7 +20,7 @@ from forecaster.handler import Client, SentryClient
 from forecaster.mediate import Mediator
 from forecaster.patterns import Chainer
 from forecaster.predict import Predicter
-from forecaster.utils import CLI, get_conf, read_strategy, save_conf
+from forecaster.utils import read_strategy
 
 logger = logging.getLogger('forecaster.bot')
 
@@ -86,14 +86,3 @@ class Bot(Chainer):
     def stop_bot(self):
         self.automate.stop()
         logger.debug("BOT: stopped")
-
-
-def config_bot():
-    CLI.print_bold("forecaster CONFIG mode enabled:")
-    telegram_token = input(CLI.colored("please insert your telegram secret token:\n", 'yellow'))
-    sentry_token = input(CLI.colored("please insert your sentry secret token:\n", 'yellow'))
-    config = get_conf()
-    config.set('TOKENS', 'telegram', telegram_token)
-    config.set('TOKENS', 'sentry', sentry_token)
-    save_conf(config)
-    logger.info("config saved")

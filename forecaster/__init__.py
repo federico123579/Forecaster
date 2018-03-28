@@ -3,7 +3,7 @@ import os.path
 
 from forecaster.__version__ import __version__
 
-from .bot import Bot, config_bot
+from .bot import Bot
 
 logging.config.dictConfig({
     'version': 1,

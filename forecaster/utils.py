@@ -9,6 +9,7 @@ import configparser
 import json
 import os
 import os.path
+import sys
 
 import termcolor
 import yaml
@@ -76,16 +77,16 @@ def make_dirs(path):
 
 
 # get configuration
-def get_conf():
+def get_conf(filename='config'):
     config = configparser.ConfigParser()
-    path = os.path.join(os.path.dirname(__file__), 'data', 'config.ini')
+    path = os.path.join(os.path.dirname(__file__), 'data', filename + '.ini')
     config.read(path)
     return config
 
 
 # save configuration
-def save_conf(config):
-    path = os.path.join(os.path.dirname(__file__), 'data', 'config.ini')
+def save_conf(config, filename):
+    path = os.path.join(os.path.dirname(__file__), 'data', filename + '.ini')
     with open(path, 'w') as configfile:
         config.write(configfile)
 
@@ -117,3 +118,65 @@ class CLI(object):
     def colored(text, color):
         """return colored"""
         return termcolor.colored(text, color)
+
+
+class CLIConfig(object):
+    def __init__(self, argument, data_file, config, overwrite=True):
+        self.ARG = argument
+        self.FILE = data_file
+        self.CONFIG = config
+        self.OVER = overwrite
+        self.queries = []
+        self.entries = []
+
+    def add_query(self, name_var, query):
+        """add query to ask for entries"""
+        query_encapsuled = (name_var, query)
+        self.queries.append(query_encapsuled)
+
+    def add_query_insert(self, name_var, query):
+        query = "please insert your {}".format(query)
+        self.add_query(name_var, query)
+
+    def run(self):
+        """wrap tun to exit if Ctrl-C"""
+        try:
+            self._run()
+        except KeyboardInterrupt:
+            sys.stdout.write("\rexited...")
+
+    def _run(self):
+        """inner run function"""
+        CLI.print_bold("forecaster CONFIG mode enabled:")
+        CLI.print_bold("ARGUMENT - {}:".format(self.ARG))
+        self._ask_queries()  # ask queries
+        self._save_config()  # save entries in config
+        print("config saved")
+
+    def _ask_queries(self):
+        """ask every queries and save entries"""
+        for query in self.queries:
+            entry = input(CLI.colored("{}:\n".format(query[1]), 'yellow'))
+            entry_encapsuled = (query[0], entry)
+            self.entries.append(entry_encapsuled)
+
+    def _save_config(self):
+        if self.CONFIG not in ('json', 'ini'):
+            raise ValueError("CONFIG type not exists")
+        if self.CONFIG == 'json':
+            path = get_json(self.FILE)
+            if self.OVER:
+                config = read_json(path)
+            else:
+                config = {}
+            for entry in self.entries:
+                config[entry[0]] = entry[1]
+            save_json(config, path)
+        elif self.CONFIG == 'ini':
+            if self.OVER:
+                config = get_conf(self.FILE)
+            else:
+                config = {}
+            for entry in self.entries:
+                config[entry[0][0]][entry[0][1]] = entry[1]
+            save_conf(config, self.FILE)
