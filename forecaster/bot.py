@@ -56,7 +56,9 @@ class Bot(Chainer):
             self.client.swap()
         elif event == EVENTS.CLOSED_POS:
             pos = kw['pos']
-            self.mediate.Telegram.close_pos(pos.result)
+            self.mediate.telegram.close_pos(pos.result)
+        elif event == EVENTS.MARKET_CLOSED:
+            self.mediate.log("Market closed for *{}*".format(kw['sym']))
         elif event == EVENTS.CHANGE_MODE:
             mode = kw['mode']
             Client().handle_request(event, mode=mode)

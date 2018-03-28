@@ -15,6 +15,7 @@ class EVENTS(Enum):
     MISSING_DATA = auto()
     MODE_FAILURE = auto()
     CLOSED_POS = auto()
+    MARKET_CLOSED = auto()
     CHANGE_MODE = auto()
 
 

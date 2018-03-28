@@ -91,6 +91,10 @@ class Client(Chainer, StateContext, metaclass=Singleton):
             except trading212api.exceptions.MaxQuantityExceeded:
                 logger.warning("Maximum quantity exceeded")
                 break
+            except trading212api.exceptions.MarketClosed:
+                logger.warning("Market closed for {}".format(symbol))
+                self.handle_request(EVENTS.MARKET_CLOSED, sym=symbol)
+                break
             except trading212api.exceptions.ProductNotAvaible:
                 logger.warning("Product not avaible")
                 SentryClient().captureException()
