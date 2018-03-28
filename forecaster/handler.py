@@ -14,7 +14,7 @@ from forecaster import __version__
 from forecaster.enums import EVENTS
 from forecaster.exceptions import MissingData
 from forecaster.patterns import Chainer, Singleton, State, StateContext
-from forecaster.utils import read_data, read_strategy, read_tokens
+from forecaster.utils import get_conf, read_data, read_tokens
 
 logger = logging.getLogger('forecaster.handler')
 mover_logger = logging.getLogger('mover')
@@ -24,8 +24,7 @@ class Client(Chainer, StateContext, metaclass=Singleton):
     """UI module with APIs"""
 
     def __init__(self, strat='default', bot=None):
-        self.strategy = read_strategy(strat)['handler']
-        curr_state = get_state_mode(self.strategy['mode'])
+        curr_state = get_state_mode(self._get_mode())
         super().__init__(successor=bot, state=curr_state)
         self.api = None
         self.handle_state('init')  # set api
@@ -48,9 +47,15 @@ class Client(Chainer, StateContext, metaclass=Singleton):
 
     def start(self):
         """start from credentials in data file"""
-        self.data = self._get_data()
         self._auto_login()
         logger.debug("CLIENT: started with data")
+
+    def _get_mode(self):
+        try:
+            self._get_data()
+        except FileNotFoundError:
+            return get_conf()['HANDLER']['mode']
+
 
     def _get_data(self):
         """get credentials if exist"""

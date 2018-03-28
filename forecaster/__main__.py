@@ -42,6 +42,7 @@ def main():
         conf = CLIConfig('credentials', 'data', 'json', True)
         conf.add_query_insert('username', 'username')
         conf.add_query_insert('password', 'password')
+        conf.add_query_insert('mode', 'trading mode')
         conf.run()
         return
     if args.foreground:

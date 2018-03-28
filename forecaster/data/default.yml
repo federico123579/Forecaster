@@ -1,7 +1,3 @@
-# --[ HANDLER ]--
-handler:
-  mode:               live
-
 # --[ TELEGRAM ]--
 mediator:             null
 
