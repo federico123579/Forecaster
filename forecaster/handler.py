@@ -85,6 +85,10 @@ class Client(Chainer, metaclass=Singleton):
                 break
             except trading212api.exceptions.PriceChangedException:
                 continue
+            except trading212api.exceptions.MinQuantityExceeded:
+                LOGGER.warning("Minimum quantity exceeded")
+                SentryClient().captureException()
+                break
             except trading212api.exceptions.MaxQuantityExceeded:
                 LOGGER.warning("Maximum quantity exceeded")
                 break
@@ -92,8 +96,12 @@ class Client(Chainer, metaclass=Singleton):
                 LOGGER.warning("Market closed for {}".format(symbol))
                 self.handle_request(EVENTS.MARKET_CLOSED, sym=symbol)
                 break
+            except trading212api.exceptions.NoPriceException:
+                LOGGER.warning("NoPriceException caught")
+                time.sleep(1)  # waiting 1 second
             except trading212api.exceptions.ProductNotAvaible:
                 LOGGER.warning("Product not avaible")
+                SentryClient().debug("{} product not avaible".format(symbol))
                 SentryClient().captureException()
                 break
 
@@ -133,7 +141,7 @@ class Client(Chainer, metaclass=Singleton):
 
     def get_margin(self, symbol, quantity):
         """get margin"""
-        self.api.get_margin(symbol, quantity)
+        return self.api.get_margin(symbol, quantity)
 
     def refresh(self):
         """refresh the session"""
@@ -182,4 +190,20 @@ class SentryClient(raven.Client, metaclass=Singleton):
         version = __version__.strip('v')
         env = 'developing'
         super().__init__(dsn=token, release=version, environment=env, *args, **kwargs)
+        self.breadcrumbs = raven.breadcrumbs
         LOGGER.debug("SENTRY: initied")
+
+    def record(self, text, *args, **kwargs):
+        self.breadcrumbs.record(message=text, *args, **kwargs)
+
+    def debug(self, text):
+        self.breadcrumbs.record(text, level='debug')
+
+    def info(self, text):
+        self.breadcrumbs.record(text, level='info')
+
+    def warning(self, text):
+        self.breadcrumbs.record(text, level='warning')
+
+    def error(self, text):
+        self.breadcrumbs.record(text, level='error')

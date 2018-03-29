@@ -10,7 +10,6 @@ Facade class to preserve profits.
 import logging
 
 from forecaster.handler import Client
-from forecaster.utils import read_strategy
 
 LOGGER = logging.getLogger('forecaster.predict')
 
@@ -19,7 +18,7 @@ class Preserver(object):
     """module that preserve funds"""
 
     def __init__(self, strat):
-        self.strategy = read_strategy(strat)['preserver']
+        self.strategy = strat['preserver']
         self.funds_risk = self.strategy['funds_risk']
         LOGGER.debug("Preserver initied")
 

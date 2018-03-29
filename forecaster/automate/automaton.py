@@ -29,7 +29,7 @@ class Automaton(Chainer):
         time_trans = self.strategy['timeframe']
         self.timeframe = [time_trans, TIMEFRAME[time_trans]]
         # AUTONOMOUS MODULES
-        self.preserver = Preserver(strat)
+        self.preserver = Preserver(self.strategy)
         self.positioner = Positioner(self.strategy)
         self.LOOP = Event()
         LOGGER.debug("AUTOMATON: ready")
