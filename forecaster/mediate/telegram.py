@@ -10,7 +10,7 @@ import logging
 import textwrap
 
 import telegram
-from forecaster.enums import EVENTS
+from forecaster.enums import ACTIONS, EVENTS
 from forecaster.handler import Client
 from forecaster.patterns import Chainer
 from forecaster.utils import get_json, save_json
@@ -88,26 +88,26 @@ class TelegramMediator(Chainer):
     def cmd_start(self, bot, update):
         logger.debug("start command caught")
         self.chat_id = update.message.chat_id
-        self.handle_request(EVENTS.START_BOT)
+        self.handle_request(ACTIONS.START_BOT)
         update.message.reply_text("Bot started")
 
     def cmd_stop(self, bot, update):
         logger.debug("stop command caught")
         self.renew_connection()
-        self.handle_request(EVENTS.STOP_BOT)
+        self.handle_request(ACTIONS.STOP_BOT)
         self.send_msg("Bot stopped")
 
     def cmd_shutdown(self, bot, update):
         logger.debug("shutdown command caught")
         self.renew_connection()
-        self.handle_request(EVENTS.SHUTDOWN)
+        self.handle_request(ACTIONS.SHUTDOWN)
 
     def cmd_restart(self, bot, update):
         logger.debug("restart command caught")
         self.renew_connection()
         self.send_msg("Restarting...")
-        self.handle_request(EVENTS.STOP_BOT)
-        self.handle_request(EVENTS.START_BOT)
+        self.handle_request(ACTIONS.STOP_BOT)
+        self.handle_request(ACTIONS.START_BOT)
         self.send_msg("Bot restarted")
 
     def cmd_help(self, bot, update):
@@ -154,7 +154,7 @@ class TelegramMediator(Chainer):
     def cmd_results(self, bot, update):
         logger.debug("results command caught")
         self.renew_connection()
-        self.send_msg("Actual results are *{:.2f}*".format(Client().RESULTS))
+        self.send_msg("Actual results are *{:.2f}*".format(Client().results))
 
     def cmd_valued(self, bot, update):
         logger.debug("valued command caught")
@@ -170,9 +170,9 @@ class TelegramMediator(Chainer):
         self.renew_connection()
         Client().refresh()
         logger.info("closing all positions")
-        old_results = Client().RESULTS
+        old_results = Client().results
         Client().close_all()
-        profit = Client().RESULTS - old_results
+        profit = Client().results - old_results
         logger.info("profit: {:.2f}".format(profit))
         self.send_msg(
             "Closed all positions with profit of *{:.2f}*".format(profit))

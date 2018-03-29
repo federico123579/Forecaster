@@ -14,12 +14,11 @@ import signal
 
 from forecaster.automate import Automaton
 from forecaster.automate.utils import ThreadHandler
-from forecaster.enums import EVENTS
+from forecaster.enums import ACTIONS, EVENTS
 from forecaster.handler import Client, SentryClient
 from forecaster.mediate import Mediator
 from forecaster.patterns import Chainer
 from forecaster.predict import Predicter
-from forecaster.utils import read_strategy
 
 LOGGER = logging.getLogger('forecaster.bot')
 
@@ -29,39 +28,38 @@ class Bot(Chainer):
 
     def __init__(self, strat='default'):
         super().__init__()
-        self.strategy = read_strategy(strat)
         # LEVEL ZERO - access to apis and track errors
         self.sentry = SentryClient()
         self.client = Client(self)
-        self.mediate = Mediator(strat, self)
+        self.mediate = Mediator(self)
         # LEVEL ONE - algorithmic core
-        self.predict = Predicter('pred')
+        self.predict = Predicter('predict')
         # LEVEL TWO - automation
-        self.automate = Automaton(strat, self.predict, self.mediate, self)
+        self.automate = Automaton('automate', self)
 
-    def handle_request(self, event, **kw):
+    def handle_request(self, request, **kw):
         """handle requests from chainers"""
-        if event == EVENTS.START_BOT:
+        # start the bot
+        if request == ACTIONS.START_BOT:
             self.start_bot()
-        elif event == EVENTS.STOP_BOT:
+        # stop the bot
+        elif request == ACTIONS.STOP_BOT:
             self.stop_bot()
-        elif event == EVENTS.SHUTDOWN:
+        # shutdown the foreground
+        elif request == ACTIONS.SHUTDOWN:
             self.stop()
-        elif event == EVENTS.MISSING_DATA:
-            self.mediate.need_conf()
-        elif event == EVENTS.MODE_FAILURE:
-            log_text = "Mode {} failed to login. Changing mode".format(self.client.mode)
-            LOGGER.warning(log_text)
-            self.mediate.log(log_text)
+        elif request == ACTIONS.PREDICT:
+            self.predict.predict(*kw['args'])
+        # swap mode
+        elif request == EVENTS.MODE_FAILURE:
+            self.echo_request(self.mediate, EVENTS.MODE_FAILURE)
             self.client.swap()
-        elif event == EVENTS.CLOSED_POS:
-            pos = kw['pos']
-            self.mediate.telegram.close_pos(pos.result)
-        elif event == EVENTS.MARKET_CLOSED:
-            self.mediate.log("Market closed for *{}*".format(kw['sym']))
-        elif event == EVENTS.CHANGE_MODE:
-            mode = kw['mode']
-            Client().handle_request(event, mode=mode)
+        # notify handler
+        elif request == EVENTS.CHANGE_MODE:
+            self.echo_request(self.client, request, **kw)
+        # notify mediator
+        elif request in (EVENTS.MISSING_DATA, EVENTS.CLOSED_POS, EVENTS.MARKET_CLOSED):
+            self.echo_request(self.mediate, request, **kw)
 
     def start(self):
         """start cycle"""

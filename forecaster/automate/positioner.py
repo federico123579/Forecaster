@@ -2,58 +2,50 @@
 forecaster.automate.positioner
 ~~~~~~~~~~~~~~
 
-Class to handle positions.
+Autonomous module that handle all positions.
 """
 
 import logging
 
 from forecaster.automate.checkers import FactoryChecker
-from forecaster.automate.filters import FilterWrapper
 from forecaster.automate.utils import ACTIONS
+from forecaster.handler import Client
 from forecaster.patterns import Chainer
-from forecaster.utils import read_strategy
 
-logger = logging.getLogger('forecaster.automate.positioner')
+LOGGER = logging.getLogger('forecaster.automate.positioner')
 
 
 class Positioner(Chainer):
-    """handle all positions"""
+    """module that handle positions"""
 
-    def __init__(self, strat, auto_strat, predicter):
-        self.predicter = predicter
-        strat = read_strategy(strat)
+    def __init__(self, strat):
+        self.auto_strategy = strat  # keep for checkers
         self.strategy = strat['positioner']
-        self.auto_strategy = auto_strat  # keep for checkers
-        # FILTER
-        self.filter = FilterWrapper(strat['filter'], self)
-        # CHECKERS
-        self.checkers_strat = strat['checkers']
-        self.pos_checks = {x[0]: x[1]['activate'] for x in strat['checkers'].items()}
+        self.checkers_strat = strat['checker']
+        self.pos_checks = self.checkers_strat['activate']
         self.checkers = []
-        logger.debug("POSITIONER: ready")
+        LOGGER.debug("POSITIONER: ready")
 
     def handle_request(self, event, **kw):
-        """handle request"""
+        """handle requests from chainers"""
         if event == ACTIONS.CLOSE:
-            self.filter.check(kw['pos'])  # pass to filters
+            LOGGER.debug("{} checker triggered for {}".format(kw['checker'], kw['pos'].id))
+            Client().close_pos(kw['pos'])
+        elif event == ACTIONS.KEEP:
+            LOGGER.debug("{} checker keeps position {}".format(kw['checker'], kw['pos'].id))
         else:
             self.pass_request(event, **kw)
 
     def start(self):
         """stop positioner"""
-        self._check_checker('relative')
-        self._check_checker('reversion')
-        self._check_checker('fixed')
-        logger.debug("POSITIONER: started")
+        for name in self.pos_checks:
+            checker = FactoryChecker[name]
+            self.checkers.append(checker)
+            checker.start(self.checkers_strat[name], self)
+        LOGGER.debug("POSITIONER: started")
 
     def stop(self):
         """stop positioner"""
         for checker in self.checkers:
             checker.stop()
-        logger.debug("POSITIONER: stopped")
-
-    def _check_checker(self, name):
-        if self.pos_checks[name]:
-            checker = FactoryChecker[name](self.checkers_strat[name], self)
-            self.checkers.append(checker)
-            checker.start()
+        LOGGER.debug("POSITIONER: stopped")
