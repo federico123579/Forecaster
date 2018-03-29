@@ -2,6 +2,8 @@
   <img src="./static/crystal_sphere.png" alt="Forecaster Logo">
 </p>
 
+# Forecaster
+
 A trading software that use a mean reversion algorithm to predict trend in regolar time spans and make transaction to Trading212 broker service using the Trading212 APIs (that I've made before).
 
 ## Behavior
@@ -20,13 +22,13 @@ with `avg` as a **price average**, `mult` for a **costant** and `dev` for a **de
 
 Install just with pip:
 
-```
+``` bash
    pip install forecaster
 ```
 
 Then run setup.sh to save the tokens needed by the software.
 
-```
+``` bash
    chmod +x setup.sh
    ./setup.sh
 ```
@@ -35,22 +37,23 @@ Then run setup.sh to save the tokens needed by the software.
 
 Will be used these _Design Patterns_:
 
-- creational: _`singleton`_
-- structural: _`Proxy`_, _`Decorator`_
-- behavioral: _`Chain of responsability`_, _`Strategy`_, _`State`_
+* creational: _`singleton`_, _`factory method`_
+* structural: _`Proxy`_, `Adapter`, _`Decorator`_
+* behavioral: _`Chain of responsability`_, _`Mediator`_, _`Strategy`_
 
 ### Main Libraries
 
-- Telegram API
-- Trading212 API
+* Telegram API
+* Trading212 API
 
 The `Bot` uses Telegram APIs to communicate with the user news and receive commands (asyncronously) and Trading212 API to make transactions and drive predictive algorithms.
 
 ### Backlog
+
 To-Do list before the v1.0 release.
 
-- [ ] Tidy up code
-- [ ] Add thread handler
-- [ ] Add more telegram commands
-- [ ] Add market closure time watcher
-- [ ] Add database integration
+* [x] Tidy up code
+* [x] Add thread handler
+* [x] Add more telegram commands
+* [x] Add market closure time watcher
+* [ ] Add database integration

@@ -9,7 +9,6 @@ import logging
 import os
 import signal
 
-from forecaster.exceptions import MissingData
 from forecaster.mediate.telegram import TelegramMediator
 from forecaster.patterns import Chainer
 from forecaster.utils import read_strategy, read_tokens
@@ -42,7 +41,6 @@ class Mediator(Chainer):
     def need_conf(self):
         self.telegram.config_needed()
         logger.warning("MEDIATOR: need config")
-        raise MissingData()
 
     def idle(self):
         logger.debug("idling...")

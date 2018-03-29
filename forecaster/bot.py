@@ -21,21 +21,21 @@ from forecaster.patterns import Chainer
 from forecaster.predict import Predicter
 from forecaster.utils import read_strategy
 
-logger = logging.getLogger('forecaster.bot')
+LOGGER = logging.getLogger('forecaster.bot')
 
 
 class Bot(Chainer):
-    """main controller"""
+    """Mediator for every component and head of chaining of resposabilities"""
 
     def __init__(self, strat='default'):
         super().__init__()
         self.strategy = read_strategy(strat)
         # LEVEL ZERO - access to apis and track errors
         self.sentry = SentryClient()
-        self.client = Client(strat, self)
+        self.client = Client(self)
         self.mediate = Mediator(strat, self)
         # LEVEL ONE - algorithmic core
-        self.predict = Predicter(strat)
+        self.predict = Predicter('pred')
         # LEVEL TWO - automation
         self.automate = Automaton(strat, self.predict, self.mediate, self)
 
@@ -51,7 +51,7 @@ class Bot(Chainer):
             self.mediate.need_conf()
         elif event == EVENTS.MODE_FAILURE:
             log_text = "Mode {} failed to login. Changing mode".format(self.client.mode)
-            logger.warning(log_text)
+            LOGGER.warning(log_text)
             self.mediate.log(log_text)
             self.client.swap()
         elif event == EVENTS.CLOSED_POS:
@@ -67,25 +67,25 @@ class Bot(Chainer):
         """start cycle"""
         # first level: interface for receiving commands
         self.mediate.start()
-        logger.debug("BOT: ready")
+        LOGGER.debug("BOT: ready")
 
     def stop(self):
         self.automate.stop()
         self.mediate.stop()
         ThreadHandler().stop_all()
-        logger.debug("BOT: shutted down")
+        LOGGER.debug("BOT: shutted down")
         os.kill(os.getpid(), signal.SIGINT)
 
     def idle(self):
-        logger.debug("BOT: idling")
+        LOGGER.debug("BOT: idling")
         self.mediate.idle()
 
     def start_bot(self):
         """start bot cycle"""
         self.client.start()
         self.automate.start()
-        logger.debug("BOT: started")
+        LOGGER.debug("BOT: started")
 
     def stop_bot(self):
         self.automate.stop()
-        logger.debug("BOT: stopped")
+        LOGGER.debug("BOT: stopped")

@@ -13,17 +13,17 @@ from forecaster.handler import Client
 from forecaster.predict.mean_reversion import MeanReversionPredicter
 from forecaster.utils import read_strategy
 
-logger = logging.getLogger('forecaster.predict')
+LOGGER = logging.getLogger('forecaster.predict')
 
 
 class Predicter(object):
-    """main predicter"""
+    """Adapter proxy class to interface with predictive algorithms"""
 
     def __init__(self, strat):
-        self.strategy = read_strategy(strat)['predicter']
+        self.strategy = read_strategy(strat)
         strategy = {'mult': self.strategy['multiplier']}
         self.MeanReversion = MeanReversionPredicter(strategy)
-        logger.debug("Predicter initied")
+        LOGGER.debug("Predicter initied")
 
     def predict(self, symbol, interval, timeframe):
         candles = Client().get_last_candles(symbol, interval, timeframe)

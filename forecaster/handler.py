@@ -13,21 +13,20 @@ import trading212api
 from forecaster import __version__
 from forecaster.enums import EVENTS
 from forecaster.exceptions import MissingData
-from forecaster.patterns import Chainer, Singleton, State, StateContext
+from forecaster.patterns import Chainer, Singleton
 from forecaster.utils import get_conf, read_data, read_tokens
 
 logger = logging.getLogger('forecaster.handler')
 mover_logger = logging.getLogger('mover')
 
 
-class Client(Chainer, StateContext, metaclass=Singleton):
-    """UI module with APIs"""
+class Client(Chainer, metaclass=Singleton):
+    """Adapter for trading212api.Client"""
 
-    def __init__(self, strat='default', bot=None):
-        curr_state = get_state_mode(self._get_mode())
-        super().__init__(successor=bot, state=curr_state)
-        self.api = None
-        self.handle_state('init')  # set api
+    def __init__(self, bot=None):
+        self.mode = self._get_mode()
+        super().__init__(successor=bot)
+        self.api = trading212api.Client(self.mode)
         self.RESULTS = 0.0  # current net profit
         logger.debug("CLIENT: initied")
 
@@ -51,23 +50,6 @@ class Client(Chainer, StateContext, metaclass=Singleton):
         self._auto_login()
         logger.debug("CLIENT: started with data")
 
-    def _get_mode(self):
-        try:
-            return self._get_data()['mode']
-        except (MissingData, KeyError):
-            return get_conf()['HANDLER']['mode']
-
-    def _get_data(self):
-        """get credentials if exist"""
-        try:
-            return read_data('data')
-        except FileNotFoundError:
-            raise MissingData()
-
-    def _auto_login(self):
-        """"auto login with credentials"""
-        self.login(self.data['username'], self.data['password'])
-
     def login(self, username, password):
         """log in trading212"""
         while True:
@@ -77,6 +59,7 @@ class Client(Chainer, StateContext, metaclass=Singleton):
             except trading212api.exceptions.InvalidCredentials as e:
                 logger.error("Invalid credentials with {}".format(e.username))
                 self.handle_request(EVENTS.MISSING_DATA)
+                raise MissingData()
             except trading212api.exceptions.LiveNotConfigured:
                 logger.error("{} mode not configured".format(self.mode))
                 self.handle_request(EVENTS.MODE_FAILURE)
@@ -147,55 +130,31 @@ class Client(Chainer, StateContext, metaclass=Singleton):
 
     def swap(self):
         """swap mode"""
+        if self.mode == 'demo':
+            self.mode = 'live'
+        elif self.mode == 'live':
+            self.mode = 'demo'
+        self.api = trading212api.Client(self.mode)
+        self.RESULTS = 0.0
         self.handle_state('swap')
         self.handle_state('init')
-        self.RESULTS = 0.0
 
+    def _get_mode(self):
+        try:
+            return self._get_data()['mode']
+        except (MissingData, KeyError):
+            return get_conf()['HANDLER']['mode']
 
-def get_state_mode(mode):
-    """get state from mode"""
-    if mode not in ['demo', 'live']:
-        raise ValueError("mode not acceptable")
-    if mode == 'demo':
-        return DemoModeState()
-    elif mode == 'live':
-        return LiveModeState()
+    def _get_data(self):
+        """get credentials if exist"""
+        try:
+            return read_data('data')
+        except FileNotFoundError:
+            raise MissingData()
 
-
-class ModeState(State):
-    """mode abstract state"""
-
-    def __init__(self, mode):
-        self.mode = mode
-        self.actions = ['init', 'swap']
-
-    def handle(self, context, action):
-        if action not in self.actions:
-            raise ValueError("actions not permitted")
-        if action == 'init':
-            context.api = trading212api.Client(self.mode)
-            context.mode = self.mode
-        if action == 'swap':
-            self.swap(context)
-
-    def swap(self, context):
-        raise NotImplementedError()
-
-
-class DemoModeState(ModeState):
-    def __init__(self):
-        super().__init__('demo')
-
-    def swap(self, context):
-        context.set_state(LiveModeState())
-
-
-class LiveModeState(ModeState):
-    def __init__(self):
-        super().__init__('live')
-
-    def swap(self, context):
-        context.set_state(DemoModeState())
+    def _auto_login(self):
+        """"auto login with credentials"""
+        self.login(self.data['username'], self.data['password'])
 
 
 class SentryClient(raven.Client, metaclass=Singleton):
