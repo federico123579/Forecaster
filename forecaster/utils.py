@@ -19,12 +19,12 @@ from forecaster.exceptions import MissingToken
 # +----------------------------------------------------------------------+
 # | UTILITY FUNCTIONS                                                    |
 # +----------------------------------------------------------------------+
-# read strategy files from data folder
+# read strategy files from config folder
 def read_strategy(name, folders=[]):
     return read_yml(get_yaml(name, folders))
 
 
-# read strategy files from data folder
+# read strategy files from config folder
 def read_data(name, folders=[]):
     return read_json(get_json(name, folders))
 
@@ -79,23 +79,23 @@ def make_dirs(path):
 # get configuration
 def get_conf(filename='config'):
     config = configparser.ConfigParser()
-    path = os.path.join(os.path.dirname(__file__), 'data', filename + '.ini')
+    path = os.path.join(os.path.dirname(__file__), 'config', filename + '.ini')
     config.read(path)
     return config
 
 
 # save configuration
 def save_conf(config, filename):
-    path = os.path.join(os.path.dirname(__file__), 'data', filename + '.ini')
+    path = os.path.join(os.path.dirname(__file__), 'config', filename + '.ini')
     with open(path, 'w') as configfile:
         config.write(configfile)
 
 
-# get file in data folder
+# get file in config folder
 def get_path(*path):
-    """get path of file in data folder (used mainly in strategy)"""
-    data_folder = os.path.join(os.path.dirname(__file__), 'data')
-    file_path = os.path.join(data_folder, *path)
+    """get path of file in config folder (used mainly in strategy)"""
+    config_folder = os.path.join(os.path.dirname(__file__), 'config')
+    file_path = os.path.join(config_folder, *path)
     return file_path
 
 
