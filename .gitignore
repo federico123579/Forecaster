@@ -1,9 +1,13 @@
 # Byte-compiled
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+nohup.out
 
-# logs
-*.log
+# conf
+config.ini
+tokens.yml
+data.json
 *.log.*
 nohup.out
 
