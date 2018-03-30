@@ -26,8 +26,8 @@ class Client(Chainer, metaclass=Singleton):
     """Adapter for trading212api.Client"""
 
     def __init__(self, bot=None):
-        self.mode = self._get_mode()
         super().__init__(successor=bot)
+        self.mode = self._get_mode()
         self.api = trading212api.Client(self.mode)
         self.results = 0.0  # current net profit
         LOGGER.debug("CLIENT: initied")
@@ -59,7 +59,10 @@ class Client(Chainer, metaclass=Singleton):
 
     def start(self):
         """start from credentials in data file"""
-        self.data = self._get_data()
+        try:
+            self.data = self._get_data()
+        except MissingData:
+            self.handle_request(EVENTS.MISSING_DATA)
         self._auto_login()
         LOGGER.debug("CLIENT: started with data")
 
