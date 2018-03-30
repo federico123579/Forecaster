@@ -38,9 +38,9 @@ class Positioner(Chainer):
     def start(self):
         """stop positioner"""
         for name in self.pos_checks:
-            checker = FactoryChecker[name]
+            checker = FactoryChecker[name](self.checkers_strat[name], self)
             self.checkers.append(checker)
-            checker.start(self.checkers_strat[name], self)
+            checker.start()
         LOGGER.debug("POSITIONER: started")
 
     def stop(self):
