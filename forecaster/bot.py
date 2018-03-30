@@ -9,93 +9,88 @@ The Bot Client class.
 """
 
 import logging
-import time
+import os
+import signal
 
 from forecaster.automate import Automaton
-from forecaster.enums import EVENTS
-from forecaster.exceptions import MissingData
+from forecaster.automate.utils import ThreadHandler
+from forecaster.enums import ACTIONS, EVENTS
 from forecaster.handler import Client, SentryClient
 from forecaster.mediate import Mediator
 from forecaster.patterns import Chainer
 from forecaster.predict import Predicter
-from forecaster.utils import read_strategy
 
-logger = logging.getLogger('forecaster.bot')
+LOGGER = logging.getLogger('forecaster.bot')
 
 
 class Bot(Chainer):
-    """main controller"""
+    """Mediator for every component and head of chaining of resposabilities"""
 
     def __init__(self, strat='default'):
         super().__init__()
-        self.strategy = read_strategy(strat)
         # LEVEL ZERO - access to apis and track errors
         self.sentry = SentryClient()
-        self.client = Client(strat, self)
-        self.mediate = Mediator(strat, self)
+        self.client = Client(self)
+        self.mediate = Mediator(self)
         # LEVEL ONE - algorithmic core
-        self.predict = Predicter(strat)
+        self.predict = Predicter('predict')
         # LEVEL TWO - automation
-        self.automate = Automaton(strat, self.predict, self.mediate, self)
+        self.automate = Automaton('automate', self)
 
-    def handle_request(self, event, **kw):
+    def handle_request(self, request, **kw):
         """handle requests from chainers"""
-        if event == EVENTS.START_BOT:
+        # start the bot
+        if request == ACTIONS.START_BOT:
             self.start_bot()
-        elif event == EVENTS.STOP_BOT:
+        # stop the bot
+        elif request == ACTIONS.STOP_BOT:
             self.stop_bot()
-        elif event == EVENTS.MISSING_DATA:
-            self.mediate.need_conf()
-        elif event == EVENTS.CLOSED_POS:
-            pos = kw['pos']
-            self.mediate.Telegram.close_pos(pos.result)
-        elif event == EVENTS.CHANGE_MODE:
-            mode = kw['mode']
-            Client().handle_request(event, mode=mode)
+        # shutdown the foreground
+        elif request == ACTIONS.SHUTDOWN:
+            self.stop()
+        # predict
+        elif request == ACTIONS.PREDICT:
+            self.predict.predict(*kw['args'])
+        # swap mode
+        elif request == EVENTS.MODE_FAILURE:
+            self.echo_request(self.mediate, EVENTS.MODE_FAILURE)
+            self.client.swap()
+        # notify handler
+        elif request == EVENTS.CHANGE_MODE:
+            self.echo_request(self.client, request, **kw)
+        # notify mediator
+        elif request in (EVENTS.MISSING_DATA, EVENTS.CLOSED_POS, EVENTS.MARKET_CLOSED):
+            self.echo_request(self.mediate, request, **kw)
+        # connection error
+        elif request == EVENTS.CONNECTION_ERROR:
+            self.echo_request(self.mediate, request)
+            self.handle_request(ACTIONS.STOP_BOT)
+            self.mediate.log("Bot stopped")
+            raise
 
     def start(self):
         """start cycle"""
         # first level: interface for receiving commands
         self.mediate.start()
-        logger.debug("BOT: ready")
+        LOGGER.debug("BOT: ready")
 
     def stop(self):
         self.automate.stop()
         self.mediate.stop()
-        logger.debug("BOT: shutted down")
+        ThreadHandler().stop_all()
+        LOGGER.debug("BOT: shutted down")
+        os.kill(os.getpid(), signal.SIGINT)
 
     def idle(self):
-        logger.debug("BOT: idling")
+        LOGGER.debug("BOT: idling")
         self.mediate.idle()
 
     def start_bot(self):
         """start bot cycle"""
-        try:
-            self.client.start()
-            self.automate.start()
-        except MissingData:
-            self.handle_request(EVENTS.MISSING_DATA)
-        logger.debug("BOT: started")
+        self.client.start()
+        self.automate.start()
+        LOGGER.debug("BOT: started")
 
     def stop_bot(self):
         self.automate.stop()
-        logger.debug("BOT: stopped")
-
-
-def main():
-    try:
-        logging.getLogger('forecaster').setLevel(logging.DEBUG)
-        bot = Bot('default')
-        bot.start()
-        bot.idle()
-    except KeyboardInterrupt:
-        logger.debug("exiting")
-        bot.stop()
-        logger.debug("exited")
-    except Exception as e:
-        logger.exception(e)
-        raise
-
-
-if __name__ == '__main__':
-    main()
+        LOGGER.debug("BOT: stopped")

@@ -39,6 +39,9 @@ class Chainer():
         self._successor = successor
         super().__init__(**kw)
 
+    def echo_request(self, chainer, request, **kwargs):
+        chainer.handle_request(request, **kwargs)
+
     def pass_request(self, request, **kwargs):
         if self._successor is not None:
             self._successor.handle_request(request, **kwargs)

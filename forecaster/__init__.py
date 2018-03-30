@@ -47,7 +47,7 @@ logging.config.dictConfig({
         },
         'forecaster': {
             'handlers': ['rotating'],
-            'level': 'CRITICAL'
+            'level': 'DEBUG'
         },
         'mover': {
             'handlers': ['movs_handler'],

@@ -1,0 +1,25 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+pandas = "*"
+numpy = "*"
+scipy = "*"
+pyyaml = "*"
+trading212-api = "*"
+python-telegram-bot = "*"
+raven = "*"
+termcolor = "*"
+
+[dev-packages]
+e1839a8 = {file = ".", editable = true}
+trading212-api = {git = 'https://github.com/federico123579/trading212-api.git'}
+pytest = "*"
+pytest-pep8 = "*"
+pytest-cov = "*"
+flake8 = "*"
+
+[requires]
+python_version = "3.6"

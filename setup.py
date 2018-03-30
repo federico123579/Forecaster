@@ -16,9 +16,16 @@ setup(
         'trading212-api',
         'python-telegram-bot',
         'raven',
+        'termcolor',
+    ],
+    test_requirements=[
+        'pytest',
+        'pytest-pep8',
+        'pytest-cov',
+        'flake8',
     ],
     include_package_data=True,
-    package_data={'': ['logs/.gitkeep', '**/*.yml']},
+    package_data={'': ['logs/.gitkeep', '**/*.yml', 'run.sh']},
     zip_safe=False,
     author="Federico Lolli",
     author_email="federico123579@gmail.com",
@@ -28,7 +35,7 @@ setup(
     url="https://github.com/federico123579/forecaster",
     entry_points={
         'console_scripts': [
-            'forecaster = forecaster.bot:main'
+            'forecaster = forecaster.__main__:main'
         ]
     },
     classifiers=[

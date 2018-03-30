@@ -9,14 +9,19 @@ from enum import Enum, auto
 
 
 class EVENTS(Enum):
-    START_BOT = auto()
-    STOP_BOT = auto()
     MISSING_DATA = auto()
+    MODE_FAILURE = auto()
     CLOSED_POS = auto()
+    MARKET_CLOSED = auto()
     CHANGE_MODE = auto()
+    CONNECTION_ERROR = auto()
 
 
 class ACTIONS(Enum):
+    START_BOT = auto()
+    STOP_BOT = auto()
+    SHUTDOWN = auto()
+    PREDICT = auto()
     BUY = 'buy'
     SELL = 'sell'
 

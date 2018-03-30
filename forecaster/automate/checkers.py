@@ -1,10 +1,8 @@
-#!/usr/bin/env python
-
 """
 forecaster.automate.checker
 ~~~~~~~~~~~~~~
 
-Contains all position checkers.
+Contains all position checkers, check when close a position.
 Every Checker is evalued with a complexity_level that define the level of
 complexity of operations.
 """
@@ -14,59 +12,65 @@ import logging
 import time
 from threading import Event
 
-from forecaster.automate.utils import ACTIONS, LogThread, wait_precisely
+from forecaster.automate.utils import ACTIONS, LogThread, ThreadHandler, wait_precisely
 from forecaster.enums import TIMEFRAME
 from forecaster.handler import Client
 from forecaster.patterns import Chainer
 from forecaster.predict.utils import AverageTrueRange
-from forecaster.utils import read_strategy
 
-logger = logging.getLogger('forecaster.automate.checker')
+LOGGER = logging.getLogger('forecaster.automate.checker')
 
 
 # Abstract class for defining new Checkers
 class PositionChecker(Chainer, metaclass=abc.ABCMeta):
-    """abstract class for checkers"""
+    """abstract implementation class for checkers"""
 
     def __init__(self, sleep_time, successor):
         super().__init__(successor)
         self.sleep_time = sleep_time
         self.active = Event()
-        logger.debug("{!s} initied".format(self.__class__.__name__))
+        LOGGER.debug("{!s} initied".format(self.__class__.__name__))
 
     def handle_request(self, event, **kw):
+        """handle requests from chainers"""
         self.pass_request(event, **kw)
 
     @abc.abstractmethod
-    def check(self):
+    def check(self, *args):
+        """main check function"""
         pass
 
-    # main loop
     def run(self):
+        """run method for threading"""
         while self.active.is_set():
             start = time.time()  # record timing
-            for pos in Client().api.account.positions:
+            for pos in Client().positions:
                 Client().refresh()  # refresh and update
                 action = self.check(pos)
                 if action is not None:
-                    self.handle_request(ACTIONS[action], pos=pos)
+                    self.handle_request(action, pos=pos, checker=self.__class__.__name__)
             wait_precisely(self.sleep_time, start, self.active)  # wait and repeat
 
     def start(self):
+        """start the thread"""
         self.active.set()
-        LogThread(target=self.run).start()
-        logger.debug("{!s} started".format(self.__class__.__name__))
+        ThreadHandler().add_event(self.active)
+        thread = LogThread(target=self.run)
+        thread.start()
+        ThreadHandler().add_thread(thread)
+        LOGGER.debug("{!s} started".format(self.__class__.__name__))
 
     def stop(self):
+        """stop the thread"""
         self.active.clear()
-        logger.debug("{!s} stopped".format(self.__class__.__name__))
+        LOGGER.debug("{!s} stopped".format(self.__class__.__name__))
 
 
 # +----------------------------------------------------------------------+
 # | complexity_level: 2                                                  |
 # | calculate ATR, then check diff with the price of position opening    |
 # | and the current price, if current price cross the percentage limit   |
-# | send request 'CLOSE' else 'KEEP'                                     |
+# | send request ACTIONS.CLOSE else ACTIONS.KEEP                         |
 # +----------------------------------------------------------------------+
 class RelativeChecker(PositionChecker):
     """Check Average True Range and put limits on percentages of the range"""
@@ -89,12 +93,12 @@ class RelativeChecker(PositionChecker):
         # closer to 1 cross the limit, as it goes down the loss increases
         progress = -(fav_price - curr_price) / (fav_price - pos_price) + 1
         unprogress = -(unfav_price - curr_price) / (unfav_price - pos_price) + 1
-        logger.debug("progress to profit {:.2f}%%".format(100 * progress))
-        logger.debug("progress to loss {:.2f}%%".format(100 * unprogress))
+        LOGGER.debug("progress to profit {:.2f}%%".format(100 * progress))
+        LOGGER.debug("progress to loss {:.2f}%%".format(100 * unprogress))
         if progress >= 1 or unprogress >= 1:
-            return 'CLOSE'
+            return ACTIONS.CLOSE
         else:
-            return 'KEEP'
+            return ACTIONS.KEEP
 
 
 # +----------------------------------------------------------------------+
@@ -110,14 +114,14 @@ class ReversionChecker(PositionChecker):
         self.timeframe = strat['timeframe']
 
     def check(self, position):
-        candles = Client().get_last_candles(pos.instrument, self.count, self.timeframe)
+        candles = Client().get_last_candles(position.instrument, self.count, self.timeframe)
         band = self.Meanrev.get_band(candles)
         if position.mode == 'buy' and position.current_price >= band:
-            logger.debug("overtaken band")
-            return 'CLOSE'
+            LOGGER.debug("overtaken band")
+            return ACTIONS.CLOSE
         elif position.mode == 'sell' and position.current_price <= band:
-            logger.debug("overtaken band")
-            return 'CLOSE'
+            LOGGER.debug("overtaken band")
+            return ACTIONS.CLOSE
 
 
 # +----------------------------------------------------------------------+
@@ -133,8 +137,8 @@ class FixedChecker(PositionChecker):
     def check(self, position):
         profit = position.result
         if profit >= self.gain or profit <= self.loss:
-            logger.debug("position profit {:.2f}".format(profit))
-            return 'CLOSE'
+            LOGGER.debug("position profit {:.2f}".format(profit))
+            return ACTIONS.CLOSE
 
 
 # factory class
