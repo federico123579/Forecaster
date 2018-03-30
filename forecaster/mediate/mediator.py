@@ -44,6 +44,9 @@ class Mediator(Chainer):
         # notify telegram of market closed
         elif event == EVENTS.MARKET_CLOSED:
             self.log("Market closed for *{}*".format(kw['sym']))
+        # connection error
+        elif event == EVENTS.CONNECTION_ERROR:
+            self.log("Connection error caught")
         else:
             self.pass_request(event, **kw)
 

@@ -20,8 +20,7 @@ class Positioner(Chainer):
 
     def __init__(self, strat):
         self.auto_strategy = strat  # keep for checkers
-        self.strategy = strat['positioner']
-        self.checkers_strat = strat['checker']
+        self.checkers_strat = strat['checkers']
         self.pos_checks = self.checkers_strat['activate']
         self.checkers = []
         LOGGER.debug("POSITIONER: ready")

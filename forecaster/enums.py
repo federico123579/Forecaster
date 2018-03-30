@@ -14,6 +14,7 @@ class EVENTS(Enum):
     CLOSED_POS = auto()
     MARKET_CLOSED = auto()
     CHANGE_MODE = auto()
+    CONNECTION_ERROR = auto()
 
 
 class ACTIONS(Enum):

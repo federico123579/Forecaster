@@ -8,6 +8,8 @@ Handle requests and responses from API
 import logging
 import time
 
+import requests
+
 import raven
 import trading212api
 from forecaster import __version__
@@ -66,6 +68,7 @@ class Client(Chainer, metaclass=Singleton):
         while True:
             try:
                 self.api.login(username, password)
+                self.username = username
                 break
             except trading212api.exceptions.InvalidCredentials as e:
                 LOGGER.error("Invalid credentials with {}".format(e.username))
@@ -151,6 +154,10 @@ class Client(Chainer, metaclass=Singleton):
             LOGGER.warning("API unavaible")
             self._auto_login()
             self.api.refresh()
+        except requests.exceptions.ConnectionError:
+            LOGGER.error("Connection error")
+            SentryClient().captureException()
+            self.handle_request(EVENTS.CONNECTION_ERROR)
 
     def swap(self):
         """swap mode"""

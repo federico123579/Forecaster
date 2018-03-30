@@ -48,6 +48,7 @@ class Bot(Chainer):
         # shutdown the foreground
         elif request == ACTIONS.SHUTDOWN:
             self.stop()
+        # predict
         elif request == ACTIONS.PREDICT:
             self.predict.predict(*kw['args'])
         # swap mode
@@ -60,6 +61,12 @@ class Bot(Chainer):
         # notify mediator
         elif request in (EVENTS.MISSING_DATA, EVENTS.CLOSED_POS, EVENTS.MARKET_CLOSED):
             self.echo_request(self.mediate, request, **kw)
+        # connection error
+        elif request == EVENTS.CONNECTION_ERROR:
+            self.echo_request(self.mediate, request)
+            self.handle_request(ACTIONS.STOP_BOT)
+            self.mediate.log("Bot stopped")
+            raise
 
     def start(self):
         """start cycle"""
