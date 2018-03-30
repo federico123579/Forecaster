@@ -36,7 +36,7 @@ class Automaton(Chainer):
 
     def handle_request(self, event, **kw):
         """handle requests from chainers"""
-        self.pass_request(event, **kw)
+        return self.pass_request(event, **kw)
 
     def start(self):
         """start threads"""

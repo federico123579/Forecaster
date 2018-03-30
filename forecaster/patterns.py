@@ -40,11 +40,11 @@ class Chainer():
         super().__init__(**kw)
 
     def echo_request(self, chainer, request, **kwargs):
-        chainer.handle_request(request, **kwargs)
+        return chainer.handle_request(request, **kwargs)
 
     def pass_request(self, request, **kwargs):
         if self._successor is not None:
-            self._successor.handle_request(request, **kwargs)
+            return self._successor.handle_request(request, **kwargs)
 
     def handle_request(self):
         raise NotImplementedError()

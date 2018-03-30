@@ -50,7 +50,7 @@ class Bot(Chainer):
             self.stop()
         # predict
         elif request == ACTIONS.PREDICT:
-            self.predict.predict(*kw['args'])
+            return self.predict.predict(*kw['args'])
         # swap mode
         elif request == EVENTS.MODE_FAILURE:
             self.echo_request(self.mediate, EVENTS.MODE_FAILURE)
