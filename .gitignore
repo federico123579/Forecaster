@@ -26,7 +26,6 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-*.lock
 
 # Unit test / coverage reports
 .pytest_cache
