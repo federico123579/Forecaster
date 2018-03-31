@@ -56,7 +56,7 @@ class Automaton(Chainer):
         LOGGER.debug("AUTOMATON: stopped")
 
     def check_closes(self):
-        """loop check closes"""
+        """first thread loop - check close"""
         wait(self._time_left(), self.LOOP)
         while self.LOOP.is_set():
             start = time.time()

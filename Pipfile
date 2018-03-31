@@ -4,8 +4,6 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-pandas = "*"
-numpy = "*"
 scipy = "*"
 pyyaml = "*"
 trading212-api = "*"

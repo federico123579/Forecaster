@@ -10,14 +10,12 @@ Use a strategy pattern to work with a yml file.
 
 import logging
 
-import numpy as np
-import pandas as pd
 from scipy import stats
 
 from forecaster.predict.utils import AverageTrueRange
 from forecaster.enums import ACTIONS
 
-logger = logging.getLogger('forecaster.predict.mean_reversion')
+LOGGER = logging.getLogger('forecaster.predict.mean_reversion')
 
 
 class MeanReversionPredicter(object):
@@ -25,7 +23,7 @@ class MeanReversionPredicter(object):
 
     def __init__(self, strategy):
         self.mult = strategy['mult']
-        logger.debug("initied MeanReversionPredicter")
+        LOGGER.debug("initied MeanReversionPredicter")
 
     def predict(self, candles):
         """predict if is it worth"""
@@ -35,10 +33,10 @@ class MeanReversionPredicter(object):
         diff = close - band  # get diff to display
         perc = 100 * (close / band - 1)  # get diff to display
         if close > band:
-            logger.debug("above bolliger band of {} - {:.2f}%%".format(diff, perc))
+            LOGGER.debug("above bolliger band of {} - {:.2f}%%".format(diff, perc))
             return ACTIONS.SELL
         else:
-            logger.debug("below bolliger band of {} - {:.2f}%%".format(diff, perc))
+            LOGGER.debug("below bolliger band of {} - {:.2f}%%".format(diff, perc))
             return ACTIONS.BUY
 
     def get_band(self, candles):

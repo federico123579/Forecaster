@@ -13,7 +13,7 @@ from threading import Thread, Event
 from forecaster.handler import SentryClient
 from forecaster.patterns import Singleton
 
-logger = logging.getLogger('forecaster.automate.utils')
+LOGGER = logging.getLogger('forecaster.automate.utils')
 
 
 class ACTIONS(Enum):
@@ -28,7 +28,7 @@ def wait_precisely(timeout, start_time, event):
 
 def wait(timeout, event):
     """wait until loop or timeout clears"""
-    logger.debug("sleeping for {} seconds".format(int(timeout)))
+    LOGGER.debug("sleeping for {} seconds".format(int(timeout)))
     start = time.time()
     while time.time() - start <= timeout and event.is_set():
         time.sleep(0.1)
@@ -48,39 +48,39 @@ class LogThread(Thread):
         try:
             self._real_run()
         except Exception as e:
-            logger.exception("Exception in thread: {}".format(e))
+            LOGGER.exception("Exception in thread: {}".format(e))
             SentryClient().captureException()
 
     def _wrap_join(self, *args, **kwargs):
         self._real_join(*args, **kwargs)
-        logger.debug("thread: {!s} - joined".format(self))
+        LOGGER.debug("thread: {!s} - joined".format(self))
 
 
 class ThreadHandler(metaclass=Singleton):
     def __init__(self):
         self.handlers = []
         self.events = []
-        logger.debug("ThreadHandler initied")
+        LOGGER.debug("ThreadHandler initied")
 
     def add_thread(self, thr):
         """add thread"""
         if thr in self.handlers:
-            logger.debug("thread: {!s} - already added".format(thr))
+            LOGGER.debug("thread: {!s} - already added".format(thr))
             return
         if isinstance(thr, Thread):
             self.handlers.append(thr)
-            logger.debug("thread: {!s} - appended".format(thr))
+            LOGGER.debug("thread: {!s} - appended".format(thr))
         else:
             raise ValueError("{} is not a thread".format(thr))
 
     def add_event(self, event):
         """add event"""
         if event in self.events:
-            logger.debug("event: {!s} - already added".format(event))
+            LOGGER.debug("event: {!s} - already added".format(event))
             return
         if isinstance(event, Event):
             self.events.append(event)
-            logger.debug("event: {!s} - appended".format(event))
+            LOGGER.debug("event: {!s} - appended".format(event))
         else:
             raise ValueError("{} is not an event".format(event))
 
@@ -88,8 +88,8 @@ class ThreadHandler(metaclass=Singleton):
         """stop all events"""
         for ev in self.events:
             ev.clear()
-            logger.debug("event: {!s} - cleared".format(ev))
+            LOGGER.debug("event: {!s} - cleared".format(ev))
         for thr in self.handlers:
             thr.join(timeout)
             if not isinstance(thr, LogThread):
-                logger.debug("thread: {!s} - joined".format(thr))
+                LOGGER.debug("thread: {!s} - joined".format(thr))

@@ -9,8 +9,6 @@ setup(
     version=__version__,
     packages=find_packages(),
     install_requires=[
-        'pandas',
-        'numpy',
         'scipy',
         'pyyaml',
         'trading212-api',
