@@ -69,6 +69,7 @@ class TelegramMediator(Chainer):
         self._add_command('changemode', self.cmd_change_mode)
         self._add_command('closeall', self.cmd_close_all)
         self._add_command('valued', self.cmd_valued)
+        self._add_command('funds', self.cmd_funds)
         self._add_command('results', self.cmd_results)
         self._add_command('whoami', self.cmd_who_am_i)
         self._add_command('help', self.cmd_help)
@@ -127,6 +128,7 @@ class TelegramMediator(Chainer):
             - /shutdown: shut the bot
             - /restart: restart the bot
             - /results: print the results from start
+            - /funds: print the current free funds
             - /valued: print current values of transactions
             - /closeall: close all positions
             - /changemode: change mode of handler""")
@@ -159,6 +161,11 @@ class TelegramMediator(Chainer):
         LOGGER.debug("results command caught")
         self.renew_connection()
         self.send_msg("Actual results are *{:.2f}*".format(Client().results))
+
+    def cmd_funds(self, bot, update):
+        LOGGER.debug("funds command caught")
+        self.renew_connection()
+        self.send_msg("Current free funds: *{}*".format(Client().funds['free']))
 
     def cmd_valued(self, bot, update):
         LOGGER.debug("valued command caught")
