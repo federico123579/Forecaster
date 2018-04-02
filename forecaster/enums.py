@@ -13,7 +13,6 @@ class EVENTS(Enum):
     MODE_FAILURE = auto()
     CLOSED_POS = auto()
     MARKET_CLOSED = auto()
-    CHANGE_MODE = auto()
     CONNECTION_ERROR = auto()
 
 
@@ -22,6 +21,7 @@ class ACTIONS(Enum):
     STOP_BOT = auto()
     SHUTDOWN = auto()
     PREDICT = auto()
+    CHANGE_MODE = auto()
     BUY = 'buy'
     SELL = 'sell'
 

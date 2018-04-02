@@ -35,9 +35,7 @@ class Mediator(Chainer):
             raise MissingData()
         # log mode failure
         elif event == EVENTS.MODE_FAILURE:
-            log_text = "Mode failed to login. Changing mode"
-            LOGGER.warning(log_text)
-            self.log(log_text)
+            LOGGER.warning("Mode failed to login")
         # notify telegram to close position
         elif event == EVENTS.CLOSED_POS:
             self.telegram.close_pos(kw['pos'].result)
@@ -48,7 +46,7 @@ class Mediator(Chainer):
         elif event == EVENTS.CONNECTION_ERROR:
             self.log("Connection error caught")
         else:
-            self.pass_request(event, **kw)
+            return self.pass_request(event, **kw)
 
     def start(self):
         """start listener"""

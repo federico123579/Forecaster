@@ -13,7 +13,7 @@ import requests
 import raven
 import trading212api
 from forecaster import __version__
-from forecaster.enums import EVENTS
+from forecaster.enums import ACTIONS, EVENTS
 from forecaster.exceptions import MissingData
 from forecaster.patterns import Chainer, Singleton
 from forecaster.utils import get_conf, read_data, read_tokens
@@ -46,14 +46,13 @@ class Client(Chainer, metaclass=Singleton):
 
     def handle_request(self, event, **kw):
         """chainer function"""
-        if event == EVENTS.CHANGE_MODE:
+        if event == ACTIONS.CHANGE_MODE:
             mode = kw['mode']
             if self.mode != mode:
-                LOGGER.info("CLIENT: switching mode from {} to {}"
-                            .format(self._state.mode, mode))
+                LOGGER.info("CLIENT: switching mode from {} to {}".format(self.mode, mode))
                 self.swap()
-                self._auto_login()
-                LOGGER.info("CLIENT: current mode: {}".format(self._state.mode))
+                LOGGER.info("CLIENT: current mode: {}".format(self.mode))
+                return self.mode == mode
         else:
             self.pass_request(event, **kw)
 
@@ -170,8 +169,7 @@ class Client(Chainer, metaclass=Singleton):
             self.mode = 'demo'
         self.api = trading212api.Client(self.mode)
         self.results = 0.0
-        self.handle_state('swap')
-        self.handle_state('init')
+        self._auto_login()
 
     def _get_mode(self):
         """get mode"""

@@ -10,7 +10,7 @@ import logging
 import textwrap
 
 import telegram
-from forecaster.enums import ACTIONS, EVENTS
+from forecaster.enums import ACTIONS
 from forecaster.handler import Client
 from forecaster.patterns import Chainer
 from forecaster.utils import get_json, save_json
@@ -34,7 +34,7 @@ class TelegramMediator(Chainer):
         self._handlers = []
 
     def handle_request(self, event, **kw):
-        self.pass_request(event, **kw)
+        return self.pass_request(event, **kw)
 
     def handle_query(self, bot, update):
         """CallbackQueryHandler"""
@@ -47,8 +47,10 @@ class TelegramMediator(Chainer):
                                   parse_mode=telegram.ParseMode.MARKDOWN)
 
         if data['event'] == 'change_mode':
-            self.handle_request(EVENTS.CHANGE_MODE, mode=data['mode'])
-            change_msg("Changed mode to *{}*".format(data['mode']))
+            if self.handle_request(ACTIONS.CHANGE_MODE, mode=data['mode']):
+                change_msg("Changed mode to *{}*".format(data['mode']))
+            else:
+                change_msg("Failed to change mode to *{}*".format(data['mode']))
 
     def activate(self):
         """listen to connections"""

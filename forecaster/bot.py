@@ -51,13 +51,13 @@ class Bot(Chainer):
         # predict
         elif request == ACTIONS.PREDICT:
             return self.predict.predict(*kw['args'])
+        # notify handler
+        elif request == ACTIONS.CHANGE_MODE:
+            return self.echo_request(self.client, request, **kw)
         # swap mode
         elif request == EVENTS.MODE_FAILURE:
             self.echo_request(self.mediate, EVENTS.MODE_FAILURE)
             self.client.swap()
-        # notify handler
-        elif request == EVENTS.CHANGE_MODE:
-            self.echo_request(self.client, request, **kw)
         # notify mediator
         elif request in (EVENTS.MISSING_DATA, EVENTS.CLOSED_POS, EVENTS.MARKET_CLOSED):
             self.echo_request(self.mediate, request, **kw)
