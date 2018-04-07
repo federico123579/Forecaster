@@ -22,8 +22,15 @@ class ACTIONS(Enum):
     SHUTDOWN = auto()
     PREDICT = auto()
     CHANGE_MODE = auto()
+    GET_USABLE_MARGIN = auto()
     BUY = 'buy'
     SELL = 'sell'
+
+
+class STATUS(Enum):
+    READY = auto()
+    ON = auto()
+    OFF = auto()
 
 
 TIMEFRAME = {

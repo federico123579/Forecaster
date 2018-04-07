@@ -39,3 +39,7 @@ class Preserver(object):
         used_funds = total_funds - free_funds
         avaible_margin = self.funds_risk * total_funds - used_funds
         return max(avaible_margin, 0)
+
+    def get_usable_margin(self):
+        """get usable margin for calculating quantities"""
+        # TODO FOR AUTOMATON

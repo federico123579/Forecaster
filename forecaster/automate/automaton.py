@@ -7,10 +7,12 @@ Proxy class to automate algorithms.
 
 import logging
 import time
+from concurrent.futures import ThreadPoolExecutor
 from threading import Event
 
 from forecaster.automate.positioner import Positioner
-from forecaster.automate.utils import LogThread, ThreadHandler, wait, wait_precisely
+from forecaster.automate.utils import (LogThread, ThreadHandler, wait,
+                                       wait_precisely)
 from forecaster.enums import ACTIONS, TIMEFRAME
 from forecaster.handler import Client
 from forecaster.patterns import Chainer
@@ -28,15 +30,20 @@ class Automaton(Chainer):
         self.strategy = read_strategy(strat)
         time_trans = self.strategy['timeframe']
         self.timeframe = [time_trans, TIMEFRAME[time_trans]]
+        self.transactions = []
         # AUTONOMOUS MODULES
         self.preserver = Preserver(self.strategy)
         self.positioner = Positioner(self.strategy)
         self.LOOP = Event()
         LOGGER.debug("AUTOMATON: ready")
 
-    def handle_request(self, event, **kw):
+    def handle_request(self, request, **kw):
         """handle requests from chainers"""
-        return self.pass_request(event, **kw)
+        # get usable margin for calculating quantities
+        if request == ACTIONS.GET_USABLE_MARGIN:
+            return self.preserver.get_usable_margin()
+        else:
+            return self.pass_request(request, **kw)
 
     def start(self):
         """start threads"""
@@ -60,10 +67,28 @@ class Automaton(Chainer):
         wait(self._time_left(), self.LOOP)
         while self.LOOP.is_set():
             start = time.time()
-            for symbol in self.strategy['currencies']:
-                tran = Transaction(symbol, self)
-                tran.complete()
+            self._open_transactions()
+            self._complete_transactions()
+            self._complete_transactions()
             wait_precisely(self.strategy['sleep_transactions'], start, self.LOOP)
+
+    def _open_transactions(self):
+        """(1/3) init all transactions"""
+        for symbol in [x[0] for x in self.strategy['currencies']]:
+            self.transactions.append(Transaction(symbol, self))
+
+    def _compose_transactions(self):
+        """(2/3) compose all transactions"""
+        with ThreadPoolExecutor(10) as executor:
+            for trans in self.transactions:
+                executor.submit(trans.compose)
+
+    def _complete_transactions(self):
+        """(3/3) complete all transactions"""
+        with ThreadPoolExecutor(10) as executor:
+            for trans in self.transactions:
+                executor.submit(trans.complete)
+        self.transactions.clear()
 
     def _time_left(self):
         """get time left to update of hist data"""
@@ -79,21 +104,20 @@ class Transaction(object):
     def __init__(self, symbol, automaton):
         self.auto = automaton
         self.symbol = symbol
-        self.mode = self._get_mode()
-        self.quantity = automaton.strategy['fixed_quantity']
         self.fix = automaton.strategy['fix_trend']
+        self.fix_quant = automaton.strategy['fixed_quantity']
+
+    def compose(self):
+        """complete mode and quantity"""
+        self.mode = self._get_mode()
+        self.quantity = self._get_quantity()
 
     def complete(self):
         Client().refresh()
         poss = [pos for pos in Client().api.positions if pos.instrument == self.symbol]
-        if self.mode == ACTIONS.BUY:
-            if self.fix:  # if requested to fix
-                self._fix_trend(poss, 'sell')
-            self.open()
-        elif self.mode == ACTIONS.SELL:
-            if self.fix:  # if requested to fix
-                self._fix_trend(poss, 'buy')
-            self.open()
+        if self.fix:  # if requested to fix
+            self._fix_trend(poss, self.mode)
+        self.open()
         LOGGER.debug("transaction completed")
 
     def open(self):
@@ -104,14 +128,26 @@ class Transaction(object):
         if self.mode == ACTIONS.SELL:
             Client().open_pos(self.symbol, 'sell', self.quantity)
 
-    def _get_mode(self):
-        args = [self.symbol, self.auto.strategy['count'], self.auto.strategy['timeframe']]
-        return self.auto.handle_request(ACTIONS.PREDICT, args=args)
-
     def _fix_trend(self, poss, mode):
-        pos_left = [x for x in poss if x.mode == mode]  # get position of mode
+        if mode == ACTIONS.BUY:
+            raw_mode = 'sell'
+        elif mode == ACTIONS.SELL:
+            raw_mode = 'buy'
+        pos_left = [x for x in poss if x.mode == raw_mode]  # get position of mode
         LOGGER.debug("{} trends to fix".format(len(pos_left)))
         if pos_left:  # if existent
             for pos in pos_left:  # iterate over
                 LOGGER.debug("fixing trend for {}".format(pos.instrument))
                 Client().close_pos(pos)
+
+    def _get_mode(self):
+        args = [self.symbol, self.auto.strategy['count'], self.auto.strategy['timeframe']]
+        return self.auto.handle_request(ACTIONS.PREDICT, args=args)
+
+    def _get_quantity(self):
+        quantity = [x[1] for x in self.auto.strategy['currencies'] if x[0] == 'EURUSD']
+        if self.fix_quant:
+            return quantity
+        else:
+            raise NotImplementedError()
+            # TODO with handle_request(ACTIONS.GET_USABLE_MARGIN)
