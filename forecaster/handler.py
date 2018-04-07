@@ -133,6 +133,7 @@ class Client(Chainer, metaclass=Singleton):
         self.refresh()
         results = self.api.close_all_positions()
         self.results += results
+        self.handle_request(EVENTS.CLOSED_ALL_POS, results=results)
 
     def get_last_candles(self, symbol, num, timeframe):
         """get last candles"""

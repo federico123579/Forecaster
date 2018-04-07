@@ -59,7 +59,8 @@ class Bot(Chainer):
             self.echo_request(self.mediate, EVENTS.MODE_FAILURE)
             self.client.swap()
         # notify mediator
-        elif request in (EVENTS.MISSING_DATA, EVENTS.CLOSED_POS, EVENTS.MARKET_CLOSED):
+        elif request in (EVENTS.MISSING_DATA, EVENTS.CLOSED_POS,
+                         EVENTS.CLOSED_ALL_POS, EVENTS.MARKET_CLOSED):
             self.echo_request(self.mediate, request, **kw)
         # connection error
         elif request == EVENTS.CONNECTION_ERROR:

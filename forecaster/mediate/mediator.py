@@ -39,6 +39,9 @@ class Mediator(Chainer):
         # notify telegram to close position
         elif event == EVENTS.CLOSED_POS:
             self.telegram.close_pos(kw['pos'].result)
+        # notify telegram to close all position
+        elif event == EVENTS.CLOSED_ALL_POS:
+            self.telegram.close_all_pos(kw['results'])
         # notify telegram of market closed
         elif event == EVENTS.MARKET_CLOSED:
             self.log("Market closed for *{}*".format(kw['sym']))
