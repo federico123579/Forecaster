@@ -11,8 +11,7 @@ from concurrent.futures import ThreadPoolExecutor
 from threading import Event
 
 from forecaster.automate.positioner import Positioner
-from forecaster.automate.utils import (LogThread, ThreadHandler, wait,
-                                       wait_precisely)
+from forecaster.automate.utils import LogThread, ThreadHandler, wait, wait_precisely
 from forecaster.enums import ACTIONS, TIMEFRAME
 from forecaster.handler import Client
 from forecaster.patterns import Chainer
@@ -68,7 +67,7 @@ class Automaton(Chainer):
         while self.LOOP.is_set():
             start = time.time()
             self._open_transactions()
-            self._complete_transactions()
+            self._compose_transactions()
             self._complete_transactions()
             wait_precisely(self.strategy['sleep_transactions'], start, self.LOOP)
 
@@ -76,18 +75,21 @@ class Automaton(Chainer):
         """(1/3) init all transactions"""
         for symbol in [x[0] for x in self.strategy['currencies']]:
             self.transactions.append(Transaction(symbol, self))
+        LOGGER.debug("opened {} transactions".format(len(self.transactions)))
 
     def _compose_transactions(self):
         """(2/3) compose all transactions"""
         with ThreadPoolExecutor(10) as executor:
             for trans in self.transactions:
                 executor.submit(trans.compose)
+        LOGGER.debug("composed {} transactions".format(len(self.transactions)))
 
     def _complete_transactions(self):
         """(3/3) complete all transactions"""
         with ThreadPoolExecutor(10) as executor:
             for trans in self.transactions:
                 executor.submit(trans.complete)
+        LOGGER.debug("completed {} transactions".format(len(self.transactions)))
         self.transactions.clear()
 
     def _time_left(self):
@@ -114,7 +116,7 @@ class Transaction(object):
 
     def complete(self):
         Client().refresh()
-        poss = [pos for pos in Client().api.positions if pos.instrument == self.symbol]
+        poss = [pos for pos in Client().positions if pos.instrument == self.symbol]
         if self.fix:  # if requested to fix
             self._fix_trend(poss, self.mode)
         self.open()
@@ -145,7 +147,7 @@ class Transaction(object):
         return self.auto.handle_request(ACTIONS.PREDICT, args=args)
 
     def _get_quantity(self):
-        quantity = [x[1] for x in self.auto.strategy['currencies'] if x[0] == 'EURUSD']
+        quantity = [x[1] for x in self.auto.strategy['currencies'] if x[0] == self.symbol][0]
         if self.fix_quant:
             return quantity
         else:

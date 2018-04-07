@@ -32,7 +32,7 @@ class Predicter(Chainer):
         """handle requests from chainers"""
         # predict
         if request == ACTIONS.PREDICT:
-            return self.predict.predict(*kw['args'])
+            return self.predict(*kw['args'])
         else:
             self.pass_request(request, **kw)
 

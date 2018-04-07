@@ -66,6 +66,23 @@ class PositionChecker(Chainer, metaclass=abc.ABCMeta):
         LOGGER.debug("{!s} stopped".format(self.__class__.__name__))
 
 
+class PositionTotalChecker(PositionChecker):
+    """abstract implementation for total checker"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def run(self):
+        """alternative run method"""
+        while self.active.is_set():
+            start = time.time()  # record timing
+            Client().refresh()  # refresh and update
+            action = self.check(Client().positions)
+            if action is not None:
+                self.handle_request(action, checker=self.__class__.__name__)
+            wait_precisely(self.sleep_time, start, self.active)  # wait and repeat
+
+
 # +----------------------------------------------------------------------+
 # | complexity_level: 2                                                  |
 # | calculate ATR, then check diff with the price of position opening    |
@@ -126,7 +143,32 @@ class ReversionChecker(PositionChecker):
 
 # +----------------------------------------------------------------------+
 # | complexity_level: 1                                                  |
-# | Check if profit exceeded limits fixed limits                         |
+# | Check if profit reached a fixed value                                |
+# +----------------------------------------------------------------------+
+class FixedTotalChecker(PositionTotalChecker):
+    def __init__(self, strat, positioner):
+        super().__init__(strat['sleep'], positioner)
+        self.gain = strat['gain']
+        self.loss = strat['loss']
+
+    def check(self, positions):
+        total_profit = sum([pos.result for pos in positions])
+        close = False
+        if self.gain is not None:
+            if total_profit >= self.gain:
+                close = True
+        if self.loss is not None:
+            if total_profit <= self.loss:
+                close = True
+        if close is True:
+            LOGGER.debug("CLOSING: total profit {:.2f}".format(total_profit))
+            return ACTIONS.CLOSE
+        LOGGER.debug("total profit {}".format(total_profit))
+
+
+# +----------------------------------------------------------------------+
+# | complexity_level: 1                                                  |
+# | Check if profit exceeded fixed limits                                |
 # +----------------------------------------------------------------------+
 class FixedChecker(PositionChecker):
     def __init__(self, strat, positioner):
@@ -145,4 +187,5 @@ class FixedChecker(PositionChecker):
 FactoryChecker = {
     'relative': RelativeChecker,
     'reversion': ReversionChecker,
-    'fixed': FixedChecker}
+    'fixed': FixedChecker,
+    'totalfixed': FixedTotalChecker}
