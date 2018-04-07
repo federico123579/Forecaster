@@ -131,7 +131,8 @@ class Client(Chainer, metaclass=Singleton):
     def close_all(self):
         """close all positions"""
         self.refresh()
-        self.api.close_all_positions()
+        results = self.api.close_all_positions()
+        self.results += results
 
     def get_last_candles(self, symbol, num, timeframe):
         """get last candles"""
