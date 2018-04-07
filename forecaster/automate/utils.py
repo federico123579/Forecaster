@@ -18,6 +18,7 @@ LOGGER = logging.getLogger('forecaster.automate.utils')
 
 class ACTIONS(Enum):
     CLOSE = auto()
+    CLOSE_ALL = auto()
     KEEP = auto()
 
 

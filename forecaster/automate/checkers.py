@@ -162,8 +162,8 @@ class FixedTotalChecker(PositionTotalChecker):
                 close = True
         if close is True:
             LOGGER.debug("CLOSING: total profit {:.2f}".format(total_profit))
-            return ACTIONS.CLOSE
-        LOGGER.debug("total profit {}".format(total_profit))
+            return ACTIONS.CLOSE_ALL
+        LOGGER.debug("total profit {:.2f}".format(total_profit))
 
 
 # +----------------------------------------------------------------------+

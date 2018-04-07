@@ -30,6 +30,10 @@ class Positioner(Chainer):
         if event == ACTIONS.CLOSE:
             LOGGER.debug("{} checker triggered for {}".format(kw['checker'], kw['pos'].id))
             Client().close_pos(kw['pos'])
+        if event == ACTIONS.CLOSE_ALL:
+            LOGGER.debug("{} checker triggered for closing {} positions".format(
+                kw['checker'], len(Client().positions)))
+            Client().close_all()
         elif event == ACTIONS.KEEP:
             LOGGER.debug("{} checker keeps position {}".format(kw['checker'], kw['pos'].id))
         else:
