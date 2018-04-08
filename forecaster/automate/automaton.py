@@ -90,7 +90,7 @@ class Automaton(Chainer):
             for trans in self.transactions:
                 executor.submit(trans.complete)
         LOGGER.debug("completed {} transactions".format(len(self.transactions)))
-        self.handle_request(EVENTS.OPENED_POS, number=len(len(self.transactions)))
+        self.handle_request(EVENTS.OPENED_POS, number=len(self.transactions))
         self.transactions.clear()
 
     def _time_left(self):
