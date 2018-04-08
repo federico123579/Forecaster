@@ -11,7 +11,7 @@ setup(
     install_requires=[
         'scipy',
         'pyyaml',
-        'trading212-api',
+        'trading212api',
         'python-telegram-bot',
         'raven',
         'termcolor',
