@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "bf1ca7e4d3507c3a881848a2738e409a98766adfbccf88c31b9b083497acab77"
+            "sha256": "daaec3e3e32ebddfedabd890fa2f74b575682676c02bcf3f650385a80f6af489"
         },
         "host-environment-markers": {
             "implementation_name": "cpython",
@@ -36,25 +36,15 @@
             ],
             "version": "==2018.1.18"
         },
-        "chardet": {
-            "hashes": [
-                "sha256:fc323ffcaeaed0e0a02bf4d117757b98aed530d9ed4531e3e15460124c106691",
-                "sha256:84ab92ed1c4d4f16916e05906b6b75a6c0fb5db821cc65e70cbd64a3e2a5eaae"
-            ],
-            "version": "==3.0.4"
+        "e9e3206": {
+            "editable": true,
+            "file": "../trading212api/"
         },
         "future": {
             "hashes": [
                 "sha256:e39ced1ab767b5936646cedba8bcce582398233d6a627067d4c6a454c90cfedb"
             ],
             "version": "==0.16.0"
-        },
-        "idna": {
-            "hashes": [
-                "sha256:8c7309c718f94b3a625cb648ace320157ad16ff131ae0af362c9f21b80ef6ec4",
-                "sha256:2c6a5de3089009e3da7c5dde64a141dbc8551d5b7f6cf4ed7c2568d0cc520a8f"
-            ],
-            "version": "==2.6"
         },
         "numpy": {
             "hashes": [
@@ -117,13 +107,6 @@
             ],
             "version": "==6.6.0"
         },
-        "requests": {
-            "hashes": [
-                "sha256:6a1b267aa90cac58ac3a765d067950e7dbbf75b1da07e895d1f594193a40a38b",
-                "sha256:9c443e7324ba5b85070c4a818ade28bfabedf16ea10206da1132edaa6dda237e"
-            ],
-            "version": "==2.18.4"
-        },
         "scipy": {
             "hashes": [
                 "sha256:3fab61f6ffbc1da9e1f8e813ba235929b5f361c1fdd728d120ead8f78560427c",
@@ -157,19 +140,6 @@
                 "sha256:1d6d69ce66211143803fbc56652b41d73b4a400a2891d7bf7a1cdf4c02de613b"
             ],
             "version": "==1.1.0"
-        },
-        "trading212-api": {
-            "hashes": [
-                "sha256:12f620869b0b7b22774c40b333e46f2b6b2e9490572bae0fcde70b605bc83b49"
-            ],
-            "version": "==0.1"
-        },
-        "urllib3": {
-            "hashes": [
-                "sha256:06330f386d6e4b195fbfc736b297f58c5a892e4440e54d294d7004e3a9bbea1b",
-                "sha256:cc44da8e1145637334317feebd728bd869a35285b93cbb4cca2577da7e62db4f"
-            ],
-            "version": "==1.22"
         }
     },
     "develop": {
@@ -327,9 +297,6 @@
                 "sha256:70e8a77beed4562e7f14fe23a786b54f6296e34344c23bc42f07b15018ff98e9"
             ],
             "version": "==1.11.0"
-        },
-        "trading212-api": {
-            "git": "https://github.com/federico123579/trading212-api.git"
         }
     }
 }
