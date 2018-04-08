@@ -99,6 +99,8 @@ class Automaton(Chainer):
         hist = Client().api.get_historical_data('EURUSD', 1, self.timeframe[0])
         last_time = int(hist[0]['timestamp']) / 1000  # remove milliseconds
         time_left = self.timeframe[1] - (time.time() - last_time)
+        while time_left < 0:  # skip cycles
+            time_left += self.timeframe[1]
         LOGGER.debug("time left (in minutes): {}".format(time_left / 60))
         return time_left
 
