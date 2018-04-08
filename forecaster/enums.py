@@ -11,6 +11,7 @@ from enum import Enum, auto
 class EVENTS(Enum):
     MISSING_DATA = auto()
     MODE_FAILURE = auto()
+    OPENED_POS = auto()
     CLOSED_POS = auto()
     CLOSED_ALL_POS = auto()
     MARKET_CLOSED = auto()

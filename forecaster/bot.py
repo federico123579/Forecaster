@@ -22,6 +22,14 @@ from forecaster.predict import Predicter
 
 LOGGER = logging.getLogger('forecaster.bot')
 
+# EVENTS COLLECTIONS
+MEDIATE_EVENTS = [
+    EVENTS.CLOSED_ALL_POS,
+    EVENTS.CLOSED_POS,
+    EVENTS.MARKET_CLOSED,
+    EVENTS.MISSING_DATA,
+    EVENTS.OPENED_POS]
+
 
 class Bot(Chainer):
     """Mediator for every component and head of chaining of resposabilities"""
@@ -59,8 +67,7 @@ class Bot(Chainer):
             self.echo_request(self.mediate, EVENTS.MODE_FAILURE)
             self.client.swap()
         # notify mediator
-        elif request in (EVENTS.MISSING_DATA, EVENTS.CLOSED_POS,
-                         EVENTS.CLOSED_ALL_POS, EVENTS.MARKET_CLOSED):
+        elif request in MEDIATE_EVENTS:
             self.echo_request(self.mediate, request, **kw)
         # connection error
         elif request == EVENTS.CONNECTION_ERROR:

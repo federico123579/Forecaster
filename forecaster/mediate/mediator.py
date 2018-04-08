@@ -36,7 +36,10 @@ class Mediator(Chainer):
         # log mode failure
         elif event == EVENTS.MODE_FAILURE:
             LOGGER.warning("Mode failed to login")
-        # notify telegram to close position
+        # notify telegram of opening positions
+        elif event == EVENTS.OPENED_POS:
+            self.telegram.open_pos(kw['number'])
+        # notify telegram of closing position
         elif event == EVENTS.CLOSED_POS:
             self.telegram.close_pos(kw['pos'].result)
         # notify telegram to close all position

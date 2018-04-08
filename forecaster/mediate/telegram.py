@@ -215,6 +215,12 @@ class TelegramMediator(Chainer):
         LOGGER.debug("closed position - revenue of {:.2f}".format(result))
         self.send_msg("Closed position with gain of *{:.2f}*".format(result))
 
+    def open_pos(self, number):
+        LOGGER.debug("open_position telegram")
+        self.renew_connection()
+        LOGGER.debug("opened {:d} position".format(number))
+        self.send_msg("Opened *{:d}* position".format(number))
+
     def close_all_pos(self, results):
         LOGGER.debug("close_all_position telegram")
         self.renew_connection()

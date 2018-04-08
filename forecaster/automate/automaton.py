@@ -12,7 +12,7 @@ from threading import Event
 
 from forecaster.automate.positioner import Positioner
 from forecaster.automate.utils import LogThread, ThreadHandler, wait, wait_precisely
-from forecaster.enums import ACTIONS, TIMEFRAME
+from forecaster.enums import ACTIONS, EVENTS, TIMEFRAME
 from forecaster.handler import Client
 from forecaster.patterns import Chainer
 from forecaster.security import Preserver
@@ -90,6 +90,7 @@ class Automaton(Chainer):
             for trans in self.transactions:
                 executor.submit(trans.complete)
         LOGGER.debug("completed {} transactions".format(len(self.transactions)))
+        self.handle_request(EVENTS.OPENED_POS, number=len(len(self.transactions)))
         self.transactions.clear()
 
     def _time_left(self):
