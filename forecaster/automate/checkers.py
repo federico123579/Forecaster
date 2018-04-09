@@ -178,7 +178,14 @@ class FixedChecker(PositionChecker):
 
     def check(self, position):
         profit = position.result
-        if profit >= self.gain or profit <= self.loss:
+        close = False
+        if self.gain is not None:
+            if profit >= self.gain:
+                close = True
+        if self.loss is not None:
+            if profit <= self.loss:
+                close = True
+        if close is True:
             LOGGER.debug("position profit {:.2f}".format(profit))
             return ACTIONS.CLOSE
 
