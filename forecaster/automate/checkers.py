@@ -110,8 +110,8 @@ class RelativeChecker(PositionChecker):
         # closer to 1 cross the limit, as it goes down the loss increases
         progress = -(fav_price - curr_price) / (fav_price - pos_price) + 1
         unprogress = -(unfav_price - curr_price) / (unfav_price - pos_price) + 1
-        LOGGER.debug("progress to profit {:.2f}%%".format(100 * progress))
-        LOGGER.debug("progress to loss {:.2f}%%".format(100 * unprogress))
+        LOGGER.debug("progress to profit {:.2f}%".format(100 * progress))
+        LOGGER.debug("progress to loss {:.2f}%".format(100 * unprogress))
         if progress >= 1 or unprogress >= 1:
             return ACTIONS.CLOSE
         else:
@@ -149,10 +149,35 @@ class FixedTotalChecker(PositionTotalChecker):
     def __init__(self, strat, positioner):
         super().__init__(strat['sleep'], positioner)
         self.gain = strat['gain']
-        self.loss = strat['loss']
+        self.loss = -strat['loss']
 
     def check(self, positions):
         total_profit = sum([pos.result for pos in positions])
+        close = False
+        if self.gain is not None:
+            if total_profit >= self.gain:
+                close = True
+        if self.loss is not None:
+            if total_profit <= self.loss:
+                close = True
+        if close is True:
+            LOGGER.debug("CLOSING: total profit {:.2f}".format(total_profit))
+            return ACTIONS.CLOSE_ALL
+        LOGGER.debug("total profit {:.2f}".format(total_profit))
+
+
+# +----------------------------------------------------------------------+
+# | complexity_level: 1                                                  |
+# | Check if profit reached a fixed value                                |
+# +----------------------------------------------------------------------+
+class RelativeTotalChecker(PositionTotalChecker):
+    def __init__(self, strat, positioner):
+        super().__init__(strat['sleep'], positioner)
+        self.gain = strat['gain']
+        self.loss = -strat['loss']
+
+    def check(self, positions):
+        total_profit = sum([pos.result for pos in positions]) / len(positions)
         close = False
         if self.gain is not None:
             if total_profit >= self.gain:
@@ -174,7 +199,7 @@ class FixedChecker(PositionChecker):
     def __init__(self, strat, positioner):
         super().__init__(strat['sleep'], positioner)
         self.gain = strat['gain']
-        self.loss = strat['loss']
+        self.loss = -strat['loss']
 
     def check(self, position):
         profit = position.result
@@ -195,4 +220,5 @@ FactoryChecker = {
     'relative': RelativeChecker,
     'reversion': ReversionChecker,
     'fixed': FixedChecker,
-    'totalfixed': FixedTotalChecker}
+    'totalfixed': FixedTotalChecker,
+    'totalrelative': RelativeTotalChecker}

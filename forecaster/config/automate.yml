@@ -2,11 +2,11 @@
 fix_trend: true
 fixed_quantity: true
 currencies:
-  - [EURUSD_ZERO, 9000]
-  - [USDJPY_ZERO, 9000]
-  - [USDCHF_ZERO, 9000]
-  - [GBPUSD_ZERO, 9000]
-  - [USDCAD_ZERO, 9000]
+  - [EURUSD_ZERO, 5000]
+  - [USDJPY_ZERO, 5000]
+  - [USDCHF_ZERO, 5000]
+  - [GBPUSD_ZERO, 5000]
+  - [USDCAD_ZERO, 5000]
 sleep_transactions: 86400
 timeframe: 1d
 count: 5
@@ -17,15 +17,19 @@ preserver:
 
 # [ CHECKER ]
 checkers:
-  activate: [totalfixed]
+  activate: [totalfixed, fixed]
   totalfixed:
     sleep: 60
-    gain: 63  # 35 * 1.8
+    gain: 35  # 35 * 1.8
+    loss: null
+  totalrelative:
+    sleep: 60
+    gain: 12  # 35 / 5
     loss: null
   fixed:
     sleep: 60
-    gain: 35
-    loss: null
+    gain: null
+    loss: 40
   # relative:
   #   sleep: 600
   #   gain: 0.005
