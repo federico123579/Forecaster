@@ -149,7 +149,7 @@ class FixedTotalChecker(PositionTotalChecker):
     def __init__(self, strat, positioner):
         super().__init__(strat['sleep'], positioner)
         self.gain = strat['gain']
-        self.loss = -strat['loss']
+        self.loss = strat['loss']
 
     def check(self, positions):
         total_profit = sum([pos.result for pos in positions])
@@ -158,7 +158,7 @@ class FixedTotalChecker(PositionTotalChecker):
             if total_profit >= self.gain:
                 close = True
         if self.loss is not None:
-            if total_profit <= self.loss:
+            if total_profit <= -self.loss:
                 close = True
         if close is True:
             LOGGER.debug("CLOSING: total profit {:.2f}".format(total_profit))
@@ -174,7 +174,7 @@ class RelativeTotalChecker(PositionTotalChecker):
     def __init__(self, strat, positioner):
         super().__init__(strat['sleep'], positioner)
         self.gain = strat['gain']
-        self.loss = -strat['loss']
+        self.loss = strat['loss']
 
     def check(self, positions):
         total_profit = sum([pos.result for pos in positions]) / len(positions)
@@ -183,7 +183,7 @@ class RelativeTotalChecker(PositionTotalChecker):
             if total_profit >= self.gain:
                 close = True
         if self.loss is not None:
-            if total_profit <= self.loss:
+            if total_profit <= -self.loss:
                 close = True
         if close is True:
             LOGGER.debug("CLOSING: total profit {:.2f}".format(total_profit))

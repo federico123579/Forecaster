@@ -4,6 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+
 e9e3206 = {file = "../trading212api/", editable = true}
 scipy = "*"
 pyyaml = "*"
@@ -12,6 +13,7 @@ raven = "*"
 termcolor = "*"
 
 [dev-packages]
+
 e1839a8 = {file = ".", editable = true}
 pytest = "*"
 pytest-pep8 = "*"

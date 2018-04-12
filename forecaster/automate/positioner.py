@@ -40,7 +40,7 @@ class Positioner(Chainer):
             self.pass_request(event, **kw)
 
     def start(self):
-        """stop positioner"""
+        """start positioner"""
         for name in self.pos_checks:
             checker = FactoryChecker[name](self.checkers_strat[name], self)
             self.checkers.append(checker)
