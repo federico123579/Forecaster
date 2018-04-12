@@ -89,13 +89,14 @@ class Automaton(Chainer):
 
     def _complete_transactions(self):
         """(3/3) complete all transactions"""
+        old_len_pos = len(Client().positions)
         with ThreadPoolExecutor(10) as executor:
             scores = sorted(self.transactions, key=lambda x: x.score)
-            scores = scores[::-1][:self.concurrent_movements]
+            scores = scores[::-1][:self.preserver.concurrent_movements]
             for trans in scores:
                 executor.submit(trans.complete)
-        LOGGER.debug("completed {} transactions".format(len(self.transactions)))
-        self.handle_request(EVENTS.OPENED_POS, number=len(self.transactions))
+        LOGGER.debug("completed {} transactions".format(len(Client().positions) - old_len_pos))
+        self.handle_request(EVENTS.OPENED_POS, number=len(Client().positions) - old_len_pos)
         self.transactions.clear()
 
     def _time_left(self):

@@ -22,7 +22,7 @@ class Preserver(object):
         self.allow_high_risk = self.strategy['allow_high_risk']
         self.funds_risk = self.strategy['funds_risk']
         self.concurrent_movements = self.strategy['concurrent_movements']
-        self.risk_factor = {x[0]: x[2] for x in self.strategy['currencies']}
+        self.risk_factor = {x[0]: x[2] for x in strat['currencies']}
         LOGGER.debug("Preserver initied")
 
     def check_high_risk(self, symbol):

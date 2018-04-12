@@ -181,12 +181,7 @@ class TelegramMediator(Chainer):
         self.renew_connection()
         Client().refresh()
         LOGGER.info("closing all positions")
-        old_results = Client().results
         Client().close_all()
-        profit = Client().results - old_results
-        LOGGER.info("profit: {:.2f}".format(profit))
-        self.send_msg(
-            "Closed all positions with profit of *{:.2f}*".format(profit))
 
     def cmd_change_mode(self, bot, update):
         """change mode command"""
