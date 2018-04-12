@@ -57,7 +57,7 @@ class Bot(Chainer):
         elif request == ACTIONS.SHUTDOWN:
             self.stop()
         # echo actions
-        elif request == ACTIONS.PREDICT:
+        elif request in [ACTIONS.PREDICT, ACTIONS.SCORE]:
             return self.echo_request(self.predict, request, **kw)
         # notify handler
         elif request == ACTIONS.CHANGE_MODE:

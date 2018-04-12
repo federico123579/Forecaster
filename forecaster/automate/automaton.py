@@ -63,7 +63,7 @@ class Automaton(Chainer):
 
     def check_closes(self):
         """first thread loop - check close"""
-        wait(self._time_left(), self.LOOP)
+        wait(self._time_left() + 5, self.LOOP)  # refresh servers
         while self.LOOP.is_set():
             start = time.time()
             self._open_transactions()
@@ -74,6 +74,9 @@ class Automaton(Chainer):
     def _open_transactions(self):
         """(1/3) init all transactions"""
         for symbol in [x[0] for x in self.strategy['currencies']]:
+            if self.preserver.check_high_risk(symbol):
+                if not self.preserver.allow_high_risk:
+                    continue
             self.transactions.append(Transaction(symbol, self))
         LOGGER.debug("opened {} transactions".format(len(self.transactions)))
 
@@ -87,7 +90,9 @@ class Automaton(Chainer):
     def _complete_transactions(self):
         """(3/3) complete all transactions"""
         with ThreadPoolExecutor(10) as executor:
-            for trans in self.transactions:
+            scores = sorted(self.transactions, key=lambda x: x.score)
+            scores = scores[::-1][:self.concurrent_movements]
+            for trans in scores:
                 executor.submit(trans.complete)
         LOGGER.debug("completed {} transactions".format(len(self.transactions)))
         self.handle_request(EVENTS.OPENED_POS, number=len(self.transactions))
@@ -98,7 +103,7 @@ class Automaton(Chainer):
         # check EURUSD for convention
         hist = Client().api.get_historical_data('EURUSD', 1, self.timeframe[0])
         last_time = int(hist[0]['timestamp']) / 1000  # remove milliseconds
-        time_left = self.timeframe[1] - (time.time() - last_time) + 5  # refresh servers
+        time_left = self.timeframe[1] - (time.time() - last_time)
         while time_left < 0:  # skip cycles
             time_left += self.timeframe[1]
         LOGGER.debug("time left (in minutes): {}".format(time_left / 60))
@@ -116,6 +121,8 @@ class Transaction(object):
         """complete mode and quantity"""
         self.mode = self._get_mode()
         self.quantity = self._get_quantity()
+        args = [self.symbol, self.auto.strategy['count'], self.auto.strategy['timeframe']]
+        self.score = self.auto.handle_request(ACTIONS.SCORE, args=args)
 
     def complete(self):
         Client().refresh()
@@ -123,7 +130,7 @@ class Transaction(object):
         if self.fix:  # if requested to fix
             self._fix_trend(poss, self.mode)
         self.open()
-        LOGGER.debug("transaction completed")
+        LOGGER.debug("transaction with score of {:.4f} completed".format(self.score))
 
     def open(self):
         if not self.auto.preserver.check_margin(self.symbol, self.quantity):

@@ -23,6 +23,7 @@ class ACTIONS(Enum):
     STOP_BOT = auto()
     SHUTDOWN = auto()
     PREDICT = auto()
+    SCORE = auto()
     CHANGE_MODE = auto()
     GET_USABLE_MARGIN = auto()
     BUY = 'buy'

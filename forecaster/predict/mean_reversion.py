@@ -39,6 +39,12 @@ class MeanReversionPredicter(object):
             LOGGER.debug("below bolliger band of {} - {:.2f}%%".format(diff, perc))
             return ACTIONS.BUY
 
+    def get_score(self, candles):
+        """get score from band relative"""
+        close = [x['close'] for x in candles][-1]
+        band = self.get_band(candles)
+        return abs(close - band) / close
+
     def get_band(self, candles):
         """get bolliger band"""
         day_closes = [x['close'] for x in candles]

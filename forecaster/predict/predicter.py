@@ -33,6 +33,8 @@ class Predicter(Chainer):
         # predict
         if request == ACTIONS.PREDICT:
             return self.predict(*kw['args'])
+        elif request == ACTIONS.SCORE:
+            return self.get_score(*kw['args'])
         else:
             self.pass_request(request, **kw)
 
@@ -40,3 +42,8 @@ class Predicter(Chainer):
         candles = Client().get_last_candles(symbol, interval, timeframe)
         prediction = self.MeanReversion.predict(candles)
         return prediction
+
+    def get_score(self, symbol, interval, timeframe):
+        candles = Client().get_last_candles(symbol, interval, timeframe)
+        score = self.MeanReversion.get_score(candles)
+        return score

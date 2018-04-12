@@ -1,26 +1,34 @@
 # --[ AUTOMATON ]--
-fix_trend: true
-fixed_quantity: true
+fix_trend:          true
+fixed_quantity:     true
 currencies:
-  - [EURUSD_ZERO, 5000]
-  - [USDJPY_ZERO, 5000]
-  - [USDCHF_ZERO, 5000]
-  - [GBPUSD_ZERO, 5000]
-  - [USDCAD_ZERO, 5000]
+  - [AUDUSD, 5000, 0]
+  - [EURCHF, 5000, 0]
+  - [EURGBP, 5000, 0]
+  - [EURRUB, 2000, 1]
+  - [EURJPY, 5000, 0]
+  - [EURUSD, 5000, 0]
+  - [GBPUSD, 5000, 0]
+  - [USDCAD, 5000, 0]
+  - [USDCHF, 5000, 0]
+  - [USDRUB, 2000, 1]
+  - [USDJPY, 5000, 0]
 sleep_transactions: 86400
 timeframe: 1d
 count: 5
 
 # [ PRESERVER ]
 preserver:
+  allow_high_risk:  false
   funds_risk: 0.5
+  concurrent_movements: 5
 
 # [ CHECKER ]
 checkers:
   activate: [totalfixed, fixed]
   totalfixed:
     sleep: 60
-    gain: 35  # 35 * 1.8
+    gain: 35  # 35 * 1
     loss: null
   totalrelative:
     sleep: 60
