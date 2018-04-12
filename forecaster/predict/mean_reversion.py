@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 forecaster.predict.mean_reversion
 ~~~~~~~~~~~~~~
@@ -33,10 +31,10 @@ class MeanReversionPredicter(object):
         diff = close - band  # get diff to display
         perc = 100 * (close / band - 1)  # get diff to display
         if close > band:
-            LOGGER.debug("above bolliger band of {} - {:.2f}%%".format(diff, perc))
+            LOGGER.debug("above bolliger band of {} - {:.2f}%".format(diff, perc))
             return ACTIONS.SELL
         else:
-            LOGGER.debug("below bolliger band of {} - {:.2f}%%".format(diff, perc))
+            LOGGER.debug("below bolliger band of {} - {:.2f}%".format(diff, perc))
             return ACTIONS.BUY
 
     def get_score(self, candles):
