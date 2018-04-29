@@ -39,12 +39,12 @@ def read_tokens():
 
 # get yaml path
 def get_yaml(name, folders=[]):
-    return get_path(name + '.yml', *folders)
+    return get_path(*folders, name + '.yml')
 
 
 # get json path
 def get_json(name, folders=[]):
-    return get_path(name + '.json', *folders)
+    return get_path(*folders, name + '.json')
 
 
 # read yaml file

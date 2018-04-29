@@ -32,7 +32,6 @@ class ACTIONS(Enum):
     GET_USABLE_MARGIN = auto()
     # PREDICTER
     PREDICT = auto()
-    SCORE = auto()
     # PREDICTION ACTIONS
     BUY = 'buy'
     SELL = 'sell'

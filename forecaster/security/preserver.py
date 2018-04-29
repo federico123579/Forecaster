@@ -19,10 +19,11 @@ class Preserver(metaclass=Singleton):
 
     def __init__(self):
         self.strategy = read_strategy('preserver')
+        auto_strategy = read_strategy('automate')
         self.allow_high_risk = self.strategy['allow_high_risk']
         self.funds_risk = self.strategy['funds_risk']
         self.concurrent_movements = self.strategy['concurrent_movements']
-        self.risk_factor = {x[0]: x[2] for x in self.strategy['currencies']}
+        self.risk_factor = {x[0]: x[2] for x in auto_strategy['currencies']}
         self.relative_threshold = self.strategy['relative-threshold']
         LOGGER.debug("Preserver initied")
 

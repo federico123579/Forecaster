@@ -40,3 +40,10 @@ class QuantityError(Exception):
         msg = "quantity error"
         logger.error(msg)
         super().__init__(msg)
+
+
+class TransactionDiscarded(Exception):
+    def __init__(self, prediction):
+        self.prediction = prediction
+        msg = "transaction discarded with prediction score of {}".format(prediction.score)
+        super().__init__(msg)

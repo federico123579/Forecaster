@@ -21,7 +21,7 @@ class PhasesChecker(list):
 
     def clear(self):
         length = self.__len__()
-        self.__init__([False for x in range(length)])
+        self.__init__(length)
 
     def check(self, index):
         return self.__getitem__(index) is True

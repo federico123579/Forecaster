@@ -7,12 +7,10 @@ Facade class to predict working with algorithms.
 
 import logging
 
-import forecaster.predict.algorithms as algos
-import forecaster.predict.utils as utils
 from forecaster.enums import ACTIONS
 from forecaster.handler import Client
+from forecaster.predict import utils, algorithms as algos
 from forecaster.security import Preserver
-from forecaster.utils import read_strategy
 
 LOGGER = logging.getLogger('forecaster.predict')
 
@@ -20,9 +18,8 @@ LOGGER = logging.getLogger('forecaster.predict')
 class Predicter(object):
     """Adapter proxy class to interface with predictive algorithms"""
 
-    def __init__(self, bot):
-        super().__init__(bot)
-        self.strategy = read_strategy('predicter')
+    def __init__(self, strategy):
+        self.strategy = strategy
         self.client = Client()
         self.preserver = Preserver()
         self.algos = set()
@@ -48,20 +45,22 @@ class Predicter(object):
         negative_score = 0.0  # score of ranking bearish
         predictions = self.get_predictions(symbol, interval, timeframe)
         for algo in self.algos:  # check for every algorithm
-            prediction = predictions[algo.algo_name]
+            prediction = predictions[algo.name]
             algo_score = algo.get_weight()  # weight of algorithm
             scores_register = algo.scores[str((interval, timeframe))]
             prediction_score = scores_register[symbol]
             # get reverse rank of score among others from 1 to 5
-            rank = list(reversed(sorted(scores_register.items(), key=lambda x: x[1])[:5]))
-            score_rank = rank.index(symbol, prediction_score) + 1
+            rank = list(reversed(sorted(scores_register.items(), key=lambda x: x[1])))
+            score_rank = rank.index((symbol, prediction_score)) + 1
+            if score_rank > self.preserver.concurrent_movements:
+                return utils.Prediction(ACTIONS.DISCARD)
             # transform index in score on percent
-            score = score_rank / len()
+            score = score_rank / self.preserver.concurrent_movements
             # if bullish add point to total score and positive_score based on score of prediction
             if prediction.action == ACTIONS.BUY:
                 prediction_score += algo_score
                 positive_score += score * algo_score
-            # if bearish substract point to total score and negative_score based on score of prediction                
+            # if bearish substract point to total score and negative_score
             elif prediction.action == ACTIONS.SELL:
                 prediction_score -= algo_score
                 negative_score += score * algo_score
@@ -69,9 +68,13 @@ class Predicter(object):
         relative_strenght = abs(prediction_score) / weights_sum
         if relative_strenght >= self.preserver.relative_threshold:
             if prediction_score > 0:
-                return utils.Prediction(ACTIONS.BUY, positive_score * relative_strenght)
+                # final score is mean of score trough algos and multiplied
+                # for the strenght of decision
+                final_score = positive_score / weights_sum * relative_strenght
+                return utils.Prediction(ACTIONS.BUY, final_score)
             elif prediction_score < 0:
-                return utils.Prediction(ACTIONS.SELL, negative_score * relative_strenght)
+                final_score = negative_score / weights_sum * relative_strenght
+                return utils.Prediction(ACTIONS.SELL, final_score)
         return utils.Prediction(ACTIONS.DISCARD)
 
     def get_predictions(self, symbol, interval, timeframe):
@@ -79,10 +82,10 @@ class Predicter(object):
         predictions = {}
         for algo in self.algos:  # check for every algorithm
             prediction = algo.predict(candles)
-            predictions[algo.algo_name] = prediction
+            predictions[algo.name] = prediction
+            if not isinstance(algo.scores.get(str((interval, timeframe))), dict):
+                algo.scores[str((interval, timeframe))] = {}
             scores_register = algo.scores.get(str((interval, timeframe)))
-            if not isinstance(scores_register, dict):
-                scores_register = {}
             scores_register[symbol] = prediction.score
         return predictions
 

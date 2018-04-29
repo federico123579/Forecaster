@@ -27,7 +27,8 @@ class TelegramMediator(Chainer):
     """telegram interface"""
 
     def __init__(self, token, proxy):
-        super().__init__(proxy)
+        super().__init__()
+        self.attach_successor(proxy)
         self.bot = telegram.Bot(token=token)
         self.updater = Updater(token=token)
         self.dispatcher = self.updater.dispatcher

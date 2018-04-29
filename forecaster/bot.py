@@ -19,6 +19,7 @@ from forecaster.handler import Client, SentryClient
 from forecaster.mediate import Mediator
 from forecaster.patterns import Chainer
 from forecaster.predict import Predicter
+from forecaster.utils import read_strategy
 
 LOGGER = logging.getLogger('forecaster.bot')
 
@@ -42,9 +43,11 @@ class Bot(Chainer):
         self.client = Client(self)
         self.mediate = Mediator(self)
         # LEVEL ONE - algorithmic core
-        self.predict = Predicter(self)
+        strat = read_strategy('predicter')
+        self.predict = Predicter(strat)
         # LEVEL TWO - automation
-        self.automate = Automaton(self)
+        strat = read_strategy('automate')
+        self.automate = Automaton(self, strat)
 
     def handle_request(self, request, **kw):
         """handle requests from chainers"""
@@ -59,10 +62,11 @@ class Bot(Chainer):
             self.stop()
         # get prediction
         elif request == ACTIONS.PREDICT:
-            return self.predict.predict(*kw['args'])
-        # get score
-        elif request == ACTIONS.SCORE:
-            return self.predict.get_score(*kw['args'])
+            try:
+                return self.predict.predict(*kw['args'])
+            except Exception as e:
+                LOGGER.exception(e)
+                raise
         # notify handler
         elif request == ACTIONS.CHANGE_MODE:
             return self.client.change_mode(kw['mode'])

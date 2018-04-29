@@ -9,8 +9,8 @@ Use a strategy pattern to work with a yml file.
 import abc
 import logging
 
-import forecaster.predict.utils as utils
 from forecaster.enums import ACTIONS
+from forecaster.predict import utils
 from forecaster.utils import read_strategy
 from scipy import stats
 
@@ -23,15 +23,15 @@ class AbstractPredicter(metaclass=abc.ABCMeta):
     def __init__(self, algo_name=None):
         self.name = algo_name
         self.scores = {}
-        try:
-            self.strategy = read_strategy(algo_name, 'algos')
-        except FileNotFoundError:
-            pass
+        # try:
+        self.strategy = read_strategy(algo_name, ['algos'])
+        # except FileNotFoundError:
+        #     pass
 
     def get_weight(self):
         """lazy implementation"""
         if not hasattr(self, 'algo_weight'):
-            self.algo_weight = read_strategy('predicter')[self.name]
+            self.algo_weight = read_strategy('predicter')['weights'][self.name]
         return self.algo_weight
 
     @abc.abstractmethod
@@ -185,10 +185,10 @@ class MeanReversionPredicter(AbstractPredicter):
         perc = 100 * (close / band - 1)  # get diff to display
         if close > band:
             LOGGER.debug("above bolliger band of {} - {:.2f}%".format(diff, perc))
-            return ACTIONS.SELL
+            return utils.Prediction(ACTIONS.SELL, self.get_score(candles))
         else:
             LOGGER.debug("below bolliger band of {} - {:.2f}%".format(diff, perc))
-            return ACTIONS.BUY
+            return utils.Prediction(ACTIONS.BUY, self.get_score(candles))
 
     def get_score(self, candles):
         """get score from band relative"""

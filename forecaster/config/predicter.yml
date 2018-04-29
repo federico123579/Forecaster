@@ -1,7 +1,8 @@
-# algorithms used
+# algorithms used from ['mean_rev', 'three_stars']
 algos:
-  - three_stars
+  - mean_rev
 
 # weights
 weights:
-  - three_stars: 1
+  mean_rev: 1
+  three_stars: 1

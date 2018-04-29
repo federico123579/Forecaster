@@ -8,15 +8,16 @@ Proxy class to automate algorithms.
 import logging
 import time
 from concurrent.futures import ThreadPoolExecutor
+from enum import Enum, auto
 from threading import Event
 
 from forecaster.automate.positioner import Positioner
 from forecaster.automate.utils import LogThread, ThreadHandler, wait, wait_precisely
 from forecaster.enums import ACTIONS, EVENTS, TIMEFRAME
+from forecaster.exceptions import TransactionDiscarded
 from forecaster.handler import Client
 from forecaster.patterns import Chainer
 from forecaster.security import Preserver
-from forecaster.utils import read_strategy
 
 LOGGER = logging.getLogger('forecaster.automate')
 
@@ -24,9 +25,10 @@ LOGGER = logging.getLogger('forecaster.automate')
 class Automaton(Chainer):
     """Adapter and Mediator for autonomous capability"""
 
-    def __init__(self, bot):
-        super().__init__(bot)
-        self.strategy = read_strategy('automate')
+    def __init__(self, bot, strategy):
+        super().__init__()
+        self.attach_successor(bot)
+        self.strategy = strategy
         time_trans = self.strategy['timeframe']
         self.timeframe = [time_trans, TIMEFRAME[time_trans]]
         self.transactions = []
@@ -40,9 +42,11 @@ class Automaton(Chainer):
 
     def handle_request(self, request, **kw):
         """handle requests from chainers"""
-        # get usable margin for calculating quantities
-        if request == ACTIONS.GET_USABLE_MARGIN:
-            return self.preserver.get_usable_margin()
+        # get score or mode by prediction
+        if request == ACTIONS.PREDICT:
+            args = [self.strategy['count'], self.strategy['timeframe']]
+            args.insert(0, kw['symbol'])
+            return self.pass_request(request, args=args)
         else:
             return self.pass_request(request, **kw)
 
@@ -86,6 +90,10 @@ class Automaton(Chainer):
         """(2/3) compose all transactions"""
         with ThreadPoolExecutor(10) as executor:
             for trans in self.transactions:
+                try:
+                    trans.compose()
+                except Exception as e:
+                    LOGGER.exception(e)
                 executor.submit(trans.compose)
         LOGGER.debug("composed {} transactions".format(len(self.transactions)))
 
@@ -97,8 +105,9 @@ class Automaton(Chainer):
             scores = scores[::-1][:self.preserver.concurrent_movements]
             for trans in scores:
                 executor.submit(trans.complete)
-        LOGGER.debug("completed {} transactions".format(len(self.client.positions) - old_len_pos))
-        self.handle_request(EVENTS.OPENED_POS, number=len(self.client.positions) - old_len_pos)
+        completed_trans = len(self.client.positions) - old_len_pos
+        LOGGER.debug("completed {} transactions".format(completed_trans))
+        self.handle_request(EVENTS.OPENED_POS, number=completed_trans)
         self.transactions.clear()
 
     def _time_left(self):
@@ -118,53 +127,69 @@ class Transaction(object):
         self.auto = automaton
         self.symbol = symbol
         self.fix = automaton.strategy['fix_trend']
-        self.fix_quant = automaton.strategy['fixed_quantity']
+        self.status = TransactionStates.INITIED
 
     def compose(self):
         """complete mode and quantity"""
-        self.mode = self._get_mode()
-        self.quantity = self._get_quantity()
-        args = [self.symbol, self.auto.strategy['count'], self.auto.strategy['timeframe']]
-        self.score = self.auto.handle_request(ACTIONS.SCORE, args=args)
+        prediction = self.auto.handle_request(ACTIONS.PREDICT, symbol=self.symbol)
+        try:  # catch discarded transaction
+            self.mode = self._get_mode(prediction)
+        except TransactionDiscarded:
+            self.score = 0
+            self.status = TransactionStates.DISCARDED
+            return  # stop
+        self.quantity = self._get_quantity(prediction)
+        self.score = prediction.score
+        self.status = TransactionStates.COMPOSED
 
     def complete(self):
-        self.client.refresh()
-        poss = [pos for pos in self.client.positions if pos.instrument == self.symbol]
-        if self.mode == ACTIONS.DISCARD:
-            LOGGER.debug("{} discarded".format(self.symbol))
-        if self.fix:  # if requested to fix
-            self._fix_trend(poss, self.mode)
+        """complete and open transaction"""
+        if self.status != TransactionStates.COMPOSED:
+            return  # abort in case of stopped
+        Client().refresh()
+        poss = [pos for pos in Client().positions if pos.instrument == self.symbol]
+        self._fix_trend(poss, self.mode)
         self.open()
         LOGGER.debug("transaction with score of {:.4f} completed".format(self.score))
+        self.status = TransactionStates.COMPLETED
 
     def open(self):
+        """check margin and send request to client"""
         if not self.auto.preserver.check_margin(self.symbol, self.quantity):
             LOGGER.warning("Transaction can't be executed due to missing funds")
-        if self.mode == ACTIONS.BUY:
-            self.client.open_pos(self.symbol, 'buy', self.quantity)
-        if self.mode == ACTIONS.SELL:
-            self.client.open_pos(self.symbol, 'sell', self.quantity)
+        Client().open_pos(self.symbol, self.mode, self.quantity)
 
     def _fix_trend(self, poss, mode):
-        if mode == ACTIONS.BUY:
-            raw_mode = 'sell'
-        elif mode == ACTIONS.SELL:
-            raw_mode = 'buy'
-        pos_left = [x for x in poss if x.mode == raw_mode]  # get position of mode
+        """close all positions of opposite way"""
+        if not self.fix:
+            return  # if requested to fix
+        pos_left = [x for x in poss if x.mode == self.mode]  # get position of mode
         LOGGER.debug("{} trends to fix".format(len(pos_left)))
         if pos_left:  # if existent
             for pos in pos_left:  # iterate over
                 LOGGER.debug("fixing trend for {}".format(pos.instrument))
-                self.client.close_pos(pos)
+                Client().close_pos(pos)
 
-    def _get_mode(self):
-        args = [self.symbol, self.auto.strategy['count'], self.auto.strategy['timeframe']]
-        return self.auto.handle_request(ACTIONS.PREDICT, args=args)
+    def _get_mode(self, prediction):
+        """get mode from prediction"""
+        if prediction.action == ACTIONS.BUY:
+            return 'buy'
+        elif prediction.action == ACTIONS.SELL:
+            return 'sell'
+        elif prediction.action == ACTIONS.DISCARD:
+            LOGGER.debug("{} discarded".format(self.symbol))
+            raise TransactionDiscarded(prediction)  # abort transaction
 
-    def _get_quantity(self):
-        quantity = [x[1] for x in self.auto.strategy['currencies'] if x[0] == self.symbol][0]
-        if self.fix_quant:
-            return quantity
-        else:
-            raise NotImplementedError()
-            # TODO with handle_request(ACTIONS.GET_USABLE_MARGIN)
+    def _get_quantity(self, prediction):
+        """get quantity based on prediction and score"""
+        min_quantity = [x[1] for x in self.auto.strategy['currencies'] if x[0] == self.symbol][0]
+        margin = self.auto.strategy['margin_to_use']
+        margin_per_unit = Client().get_margin(self.symbol, min_quantity) / min_quantity
+        return int(margin / Preserver().concurrent_movements / margin_per_unit)
+
+
+class TransactionStates(Enum):
+    INITIED = auto()
+    COMPOSED = auto()
+    COMPLETED = auto()
+    DISCARDED = auto()

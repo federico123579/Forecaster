@@ -1,18 +1,19 @@
 # --[ AUTOMATON ]--
-fix_trend:          true
-fixed_quantity:     true
+fix_trend: true
+# fixed margin to use
+margin_to_use: 125
 currencies:
-  - [AUDUSD, 5000, 0]
-  - [EURCHF, 5000, 0]
-  - [EURGBP, 5000, 0]
-  - [EURRUB, 2000, 1]
-  - [EURJPY, 5000, 0]
-  - [EURUSD, 5000, 0]
-  - [GBPUSD, 6000, 0]
-  - [USDCAD, 5000, 0]
-  - [USDCHF, 5000, 0]
-  - [USDRUB, 2000, 1]
-  - [USDJPY, 5000, 0]
-sleep_transactions: 86400
+  - [AUDUSD, 1000, 0]
+  - [EURCHF, 1000, 0]
+  - [EURGBP, 1000, 0]
+  - [EURRUB, 1000, 1]
+  - [EURJPY, 1000, 0]
+  - [EURUSD, 1000, 0]
+  - [GBPUSD, 1000, 0]
+  - [USDCAD, 1000, 0]
+  - [USDCHF, 1000, 0]
+  - [USDRUB, 1000, 1]
+  - [USDJPY, 1000, 0]
+sleep_transactions: 3600
 timeframe: 1d
-count: 5
+count: 1000

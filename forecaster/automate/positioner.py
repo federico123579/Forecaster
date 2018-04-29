@@ -11,6 +11,7 @@ from forecaster.automate.checkers import FactoryChecker
 from forecaster.automate.utils import ACTIONS
 from forecaster.handler import Client
 from forecaster.patterns import Chainer
+from forecaster.utils import read_strategy
 
 LOGGER = logging.getLogger('forecaster.automate.positioner')
 
@@ -19,9 +20,10 @@ class Positioner(Chainer):
     """module that handle positions"""
 
     def __init__(self, strat, bot=None):
-        super().__init__(bot)
+        super().__init__()
+        self.attach_successor(bot)
         self.auto_strategy = strat  # keep for checkers
-        self.checkers_strat = strat['checkers']
+        self.checkers_strat = read_strategy('checkers')
         self.pos_checks = self.checkers_strat['activate']
         self.checkers = []
         LOGGER.debug("POSITIONER: ready")

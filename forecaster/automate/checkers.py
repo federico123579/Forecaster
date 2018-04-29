@@ -26,7 +26,8 @@ class PositionChecker(Chainer, metaclass=abc.ABCMeta):
     """abstract implementation class for checkers"""
 
     def __init__(self, sleep_time, successor):
-        super().__init__(successor)
+        super().__init__()
+        self.attach_successor(successor)
         self.sleep_time = sleep_time
         self.active = Event()
         LOGGER.debug("{!s} initied".format(self.__class__.__name__))
@@ -133,7 +134,7 @@ class ReversionChecker(PositionChecker):
 
     def check(self, position):
         candles = Client().get_last_candles(
-            position.instrument, self.count,self.timeframe, position.mode)
+            position.instrument, self.count, self.timeframe, position.mode)
         band = self.Meanrev.get_band(candles)
         if position.mode == 'buy' and position.current_price >= band:
             LOGGER.debug("overtaken band")

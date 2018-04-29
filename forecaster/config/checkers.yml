@@ -1,25 +1,24 @@
 # [ CHECKER ]
-checkers:
-  activate: [totalfixed, fixed]
-  totalfixed:
-    sleep: 60
-    gain: 35  # 35 * 1
-    loss: null
-  totalrelative:
-    sleep: 60
-    gain: 12  # 35 / 5
-    loss: null
-  fixed:
-    sleep: 60
-    gain: null
-    loss: 40
-  # relative:
-  #   sleep: 600
-  #   gain: 0.005
-  #   loss: 0.005
-  #   avg:
-  #     timeframe: 1h
-  #     count: 5
-  # reversion:
-  #   sleep: 60
-  #   timeframe: 1h
+activate: [totalfixed, fixed]
+totalfixed:
+  sleep: 60
+  gain: 35  # 35 * 1
+  loss: null
+totalrelative:
+  sleep: 60
+  gain: 12  # 35 / 5
+  loss: null
+fixed:
+  sleep: 60
+  gain: null
+  loss: 40
+# relative:
+#   sleep: 600
+#   gain: 0.005
+#   loss: 0.005
+#   avg:
+#     timeframe: 1h
+#     count: 5
+# reversion:
+#   sleep: 60
+#   timeframe: 1h
