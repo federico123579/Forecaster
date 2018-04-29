@@ -33,3 +33,4 @@ wheels/
 
 # virtualenv
 env/
+venv/

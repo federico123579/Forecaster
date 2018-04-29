@@ -1,6 +1,7 @@
 # algorithms used
 algos:
   - three_stars
+
 # weights
 weights:
   - three_stars: 1

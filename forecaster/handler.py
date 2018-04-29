@@ -29,7 +29,7 @@ class ClientAbstractMeta(type(Chainer), Singleton):
 class Client(Chainer, metaclass=ClientAbstractMeta):
     """Adapter for trading212api.Client"""
 
-    def __init__(self, bot):
+    def __init__(self, bot=None):
         super().__init__()
         self.attach_successor(bot)
         self.mode = self._get_mode()

@@ -22,10 +22,17 @@ class AbstractPredicter(metaclass=abc.ABCMeta):
 
     def __init__(self, algo_name=None):
         self.name = algo_name
-        self.strategy = read_strategy(algo_name, 'algos')
+        self.scores = {}
+        try:
+            self.strategy = read_strategy(algo_name, 'algos')
+        except FileNotFoundError:
+            pass
 
     def get_weight(self):
-        return read_strategy('predicter')[self.name]
+        """lazy implementation"""
+        if not hasattr(self, 'algo_weight'):
+            self.algo_weight = read_strategy('predicter')[self.name]
+        return self.algo_weight
 
     @abc.abstractmethod
     def predict(self, candles):
@@ -166,7 +173,7 @@ class MeanReversionPredicter(AbstractPredicter):
 
     def __init__(self, algo_name):
         super().__init__(algo_name)
-        self.mult = strategy['multiplier']
+        self.mult = self.strategy['multiplier']
         LOGGER.debug("initied MeanReversionPredicter")
 
     def predict(self, candles):
