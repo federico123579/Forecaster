@@ -13,8 +13,8 @@ import requests
 import raven
 import trading212api
 from forecaster import __version__
-from forecaster.enums import ACTIONS, EVENTS
-from forecaster.exceptions import MissingData
+from forecaster.enums import DIRECTIONS, EVENTS
+from forecaster.exceptions import MissingData, ProductNotAvaible, QuantityError
 from forecaster.patterns import Chainer, Singleton
 from forecaster.utils import get_conf, read_data, read_tokens
 
@@ -22,11 +22,16 @@ LOGGER = logging.getLogger('forecaster.handler')
 MOVER_LOGGER = logging.getLogger('mover')
 
 
-class Client(Chainer, metaclass=Singleton):
+class ClientAbstractMeta(type(Chainer), Singleton):
+    pass
+
+
+class Client(Chainer, metaclass=ClientAbstractMeta):
     """Adapter for trading212api.Client"""
 
-    def __init__(self, bot=None):
-        super().__init__(successor=bot)
+    def __init__(self, bot):
+        super().__init__()
+        self.attach_successor(bot)
         self.mode = self._get_mode()
         self.api = trading212api.Client(self.mode)
         self.results = 0.0  # current net profit
@@ -44,21 +49,13 @@ class Client(Chainer, metaclass=Singleton):
     def funds(self):
         return self.api.account.funds
 
-    def handle_request(self, event, **kw):
+    def handle_request(self, request, **kw):
         """chainer function"""
-        if event == ACTIONS.CHANGE_MODE:
-            mode = kw['mode']
-            if self.mode != mode:
-                LOGGER.info("CLIENT: switching mode from {} to {}".format(self.mode, mode))
-                self.swap()
-                LOGGER.info("CLIENT: current mode: {}".format(self.mode))
-                return self.mode == mode
-        else:
-            self.pass_request(event, **kw)
+        self.pass_request(request, **kw)
 
     def start(self):
         """start from credentials in data file"""
-        try:
+        try:  # try to get data
             self.data = self._get_data()
         except MissingData:
             self.handle_request(EVENTS.MISSING_DATA)
@@ -68,7 +65,7 @@ class Client(Chainer, metaclass=Singleton):
     def login(self, username, password):
         """log in trading212"""
         while True:
-            try:
+            try:  # try to login
                 self.api.login(username, password)
                 self.username = username
                 break
@@ -84,47 +81,48 @@ class Client(Chainer, metaclass=Singleton):
         """open position and handle exceptions"""
         self.refresh()  # renovate sessions
         while True:  # handle exceptions
-            try:
+            try:  # try to open positions
                 self.api.open_position(mode, symbol, quantity)
                 MOVER_LOGGER.info("opened position of {:d} {} on {}".format(quantity, symbol, mode))
-                break
+                break  # exit loop
             except trading212api.exceptions.PriceChangedException:
-                continue
-            except trading212api.exceptions.MinQuantityExceeded:
+                pass  # exception caught due to connection error
+            except trading212api.exceptions.MinQuantityExceeded as e:
                 LOGGER.warning("Minimum quantity exceeded")
                 SentryClient().captureException()
-                break
-            except trading212api.exceptions.MaxQuantityExceeded:
+                raise QuantityError('min', e.limit)  # raise minimun exception
+            except trading212api.exceptions.MaxQuantityExceeded as e:
                 LOGGER.warning("Maximum quantity exceeded")
-                break
+                raise QuantityError('max', e.limit)  # raise maximum exception
             except trading212api.exceptions.MarketClosed:
                 LOGGER.warning("Market closed for {}".format(symbol))
                 self.handle_request(EVENTS.MARKET_CLOSED, sym=symbol)
-                break
+                raise ProductNotAvaible()  # raise product not avaible
             except trading212api.exceptions.NoPriceException:
                 LOGGER.warning("NoPriceException caught")
-                time.sleep(1)  # waiting 1 second
+                time.sleep(1)  # unknown exception [?]
             except trading212api.exceptions.ProductNotAvaible:
                 LOGGER.warning("Product not avaible")
                 SentryClient().debug("{} product not avaible".format(symbol))
                 SentryClient().captureException()
-                break
+                self.handle_request(EVENTS.PRODUCT_NOT_AVAIBLE, sym=symbol)
+                raise ProductNotAvaible()  # raise product not avaible
 
     def close_pos(self, pos):
         """close position and update results"""
         self.refresh()  # renovate sessions
         while True:
-            try:
+            try:  # try to close position
                 self.api.close_position(pos.id)  # close
                 MOVER_LOGGER.info("closed position {}".format(pos.id))
                 MOVER_LOGGER.info("gain: {:.2f}".format(pos.result))
-                break
+                break  # exit loop
             except trading212api.exceptions.NoPriceException:
                 LOGGER.warning("NoPriceException caught")
-                time.sleep(1)  # waiting 1 second
-            except ValueError:
+                time.sleep(1)  # unknown exception [?]
+            except ValueError:  # id not found in positions ids
                 LOGGER.warning("Position not found")
-                break
+                break  # ignore it
         self.results += pos.result  # update returns
         self.handle_request(EVENTS.CLOSED_POS, pos=pos)
 
@@ -135,11 +133,11 @@ class Client(Chainer, metaclass=Singleton):
         self.results += results
         self.handle_request(EVENTS.CLOSED_ALL_POS, results=results)
 
-    def get_last_candles(self, symbol, num, timeframe):
+    def get_last_candles(self, symbol, num, timeframe, mode='sell'):
         """get last candles"""
         self.refresh()  # renovate sessions
         candles = self.api.get_historical_data(symbol, num, timeframe)
-        prices = [candle['bid'] for candle in candles]
+        prices = [candle[DIRECTIONS[mode]] for candle in candles]
         return prices
 
     def get_margin(self, symbol, quantity):
@@ -159,6 +157,14 @@ class Client(Chainer, metaclass=Singleton):
             SentryClient().captureException()
             self.handle_request(EVENTS.CONNECTION_ERROR)
 
+    def change_mode(self, mode):
+        """change mode"""
+        if self.mode != mode:
+            LOGGER.info("CLIENT: switching mode from {} to {}".format(self.mode, mode))
+            self.swap()  # swap mode
+            LOGGER.info("CLIENT: current mode: {}".format(self.mode))
+            return self.mode == mode
+
     def swap(self):
         """swap mode"""
         if self.mode == 'demo':
@@ -171,7 +177,7 @@ class Client(Chainer, metaclass=Singleton):
 
     def _get_mode(self):
         """get mode"""
-        try:
+        try:  # get data or get default mode
             return self._get_data()['mode']
         except (MissingData, KeyError):
             return get_conf()['HANDLER']['mode']

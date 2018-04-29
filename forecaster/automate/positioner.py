@@ -18,7 +18,8 @@ LOGGER = logging.getLogger('forecaster.automate.positioner')
 class Positioner(Chainer):
     """module that handle positions"""
 
-    def __init__(self, strat):
+    def __init__(self, strat, bot=None):
+        super().__init__(bot)
         self.auto_strategy = strat  # keep for checkers
         self.checkers_strat = strat['checkers']
         self.pos_checks = self.checkers_strat['activate']

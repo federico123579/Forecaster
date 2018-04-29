@@ -16,7 +16,7 @@ from forecaster.automate.utils import ACTIONS, LogThread, ThreadHandler, wait_pr
 from forecaster.enums import TIMEFRAME
 from forecaster.handler import Client
 from forecaster.patterns import Chainer
-from forecaster.predict.utils import AverageTrueRange
+from forecaster.predict.utils import average_true_range
 
 LOGGER = logging.getLogger('forecaster.automate.checker')
 
@@ -102,8 +102,9 @@ class RelativeChecker(PositionChecker):
         pos_price = position.price
         curr_price = position.current_price
         candles = Client().get_last_candles(
-            position.instrument, self.avg['count'], self.avg['timeframe'])
-        ATR = AverageTrueRange(candles)
+            position.instrument, self.avg['count'],
+            self.avg['timeframe'], position.mode)
+        ATR = average_true_range(candles)
         diff = pos_price - ATR
         fav_price = pos_price + diff * self.gain
         unfav_price = pos_price - diff * self.loss
@@ -131,7 +132,8 @@ class ReversionChecker(PositionChecker):
         self.timeframe = strat['timeframe']
 
     def check(self, position):
-        candles = Client().get_last_candles(position.instrument, self.count, self.timeframe)
+        candles = Client().get_last_candles(
+            position.instrument, self.count,self.timeframe, position.mode)
         band = self.Meanrev.get_band(candles)
         if position.mode == 'buy' and position.current_price >= band:
             LOGGER.debug("overtaken band")
@@ -177,7 +179,7 @@ class RelativeTotalChecker(PositionTotalChecker):
         self.loss = strat['loss']
 
     def check(self, positions):
-        total_profit = sum([pos.result for pos in positions]) / len(positions)
+        total_profit = sum([pos.result for pos in positions]) / max(len(positions), 1)
         close = False
         if self.gain is not None:
             if total_profit >= self.gain:

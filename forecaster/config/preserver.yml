@@ -1,0 +1,9 @@
+# --[ PRESERVER ]--
+# allow risky currencties movement 
+allow_high_risk: false
+# margin to use in funds
+funds_risk: 0.5
+# maximum currencies at once
+concurrent_movements: 5
+# threshold for buying currencies
+relative-threshold: 0.5

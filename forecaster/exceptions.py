@@ -24,3 +24,19 @@ class MissingToken(Exception):
         msg = "tokens not found in environment variables, please run setup.sh first."
         logger.error(msg)
         super().__init__(msg)
+
+
+class ProductNotAvaible(Exception):
+    def __init__(self):
+        msg = "product not avaible"
+        logger.error(msg)
+        super().__init__(msg)
+
+
+class QuantityError(Exception):
+    def __init__(self, mode, quant):
+        self.mode = mode
+        self.quant = quant
+        msg = "quantity error"
+        logger.error(msg)
+        super().__init__(msg)

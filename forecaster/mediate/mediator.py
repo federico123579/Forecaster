@@ -21,8 +21,9 @@ LOGGER = logging.getLogger('forecaster.mediate')
 class Mediator(Chainer):
     """Adapter and proxy for accessing telegram"""
 
-    def __init__(self, bot=None):
-        super().__init__(bot)
+    def __init__(self, bot):
+        super().__init__()
+        self.attach_successor(bot)
         token = read_tokens()['telegram']
         self.telegram = TelegramMediator(token, bot)
         LOGGER.debug("MEDIATOR: ready")
@@ -33,9 +34,6 @@ class Mediator(Chainer):
         if event == EVENTS.MISSING_DATA:
             self.need_conf()
             raise MissingData()
-        # log mode failure
-        elif event == EVENTS.MODE_FAILURE:
-            LOGGER.warning("Mode failed to login")
         # notify telegram of opening positions
         elif event == EVENTS.OPENED_POS:
             self.telegram.open_pos(kw['number'])
@@ -48,9 +46,9 @@ class Mediator(Chainer):
         # notify telegram of market closed
         elif event == EVENTS.MARKET_CLOSED:
             self.log("Market closed for *{}*".format(kw['sym']))
-        # connection error
-        elif event == EVENTS.CONNECTION_ERROR:
-            self.log("Connection error caught")
+        # notify telegram of product not avaible
+        elif event == EVENTS.PRODUCT_NOT_AVAIBLE:
+            self.log("Product *{}* not avaible".format(kw['sym']))
         else:
             return self.pass_request(event, **kw)
 

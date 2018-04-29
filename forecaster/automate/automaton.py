@@ -24,15 +24,17 @@ LOGGER = logging.getLogger('forecaster.automate')
 class Automaton(Chainer):
     """Adapter and Mediator for autonomous capability"""
 
-    def __init__(self, strat, bot):
+    def __init__(self, bot):
         super().__init__(bot)
-        self.strategy = read_strategy(strat)
+        self.strategy = read_strategy('automate')
         time_trans = self.strategy['timeframe']
         self.timeframe = [time_trans, TIMEFRAME[time_trans]]
         self.transactions = []
+        # INIT SINGLETON MODULES
+        self.client = Client()
+        self.preserver = Preserver()
         # AUTONOMOUS MODULES
-        self.preserver = Preserver(self.strategy)
-        self.positioner = Positioner(self.strategy)
+        self.positioner = Positioner(self.strategy, self)
         self.LOOP = Event()
         LOGGER.debug("AUTOMATON: ready")
 
@@ -89,20 +91,20 @@ class Automaton(Chainer):
 
     def _complete_transactions(self):
         """(3/3) complete all transactions"""
-        old_len_pos = len(Client().positions)
+        old_len_pos = len(self.client.positions)
         with ThreadPoolExecutor(10) as executor:
             scores = sorted(self.transactions, key=lambda x: x.score)
             scores = scores[::-1][:self.preserver.concurrent_movements]
             for trans in scores:
                 executor.submit(trans.complete)
-        LOGGER.debug("completed {} transactions".format(len(Client().positions) - old_len_pos))
-        self.handle_request(EVENTS.OPENED_POS, number=len(Client().positions) - old_len_pos)
+        LOGGER.debug("completed {} transactions".format(len(self.client.positions) - old_len_pos))
+        self.handle_request(EVENTS.OPENED_POS, number=len(self.client.positions) - old_len_pos)
         self.transactions.clear()
 
     def _time_left(self):
         """get time left to update of hist data"""
         # check EURUSD for convention
-        hist = Client().api.get_historical_data('EURUSD', 1, self.timeframe[0])
+        hist = self.client.api.get_historical_data('EURUSD', 1, self.timeframe[0])
         last_time = int(hist[0]['timestamp']) / 1000  # remove milliseconds
         time_left = self.timeframe[1] - (time.time() - last_time)
         while time_left < 0:  # skip cycles
@@ -126,8 +128,10 @@ class Transaction(object):
         self.score = self.auto.handle_request(ACTIONS.SCORE, args=args)
 
     def complete(self):
-        Client().refresh()
-        poss = [pos for pos in Client().positions if pos.instrument == self.symbol]
+        self.client.refresh()
+        poss = [pos for pos in self.client.positions if pos.instrument == self.symbol]
+        if self.mode == ACTIONS.DISCARD:
+            LOGGER.debug("{} discarded".format(self.symbol))
         if self.fix:  # if requested to fix
             self._fix_trend(poss, self.mode)
         self.open()
@@ -137,9 +141,9 @@ class Transaction(object):
         if not self.auto.preserver.check_margin(self.symbol, self.quantity):
             LOGGER.warning("Transaction can't be executed due to missing funds")
         if self.mode == ACTIONS.BUY:
-            Client().open_pos(self.symbol, 'buy', self.quantity)
+            self.client.open_pos(self.symbol, 'buy', self.quantity)
         if self.mode == ACTIONS.SELL:
-            Client().open_pos(self.symbol, 'sell', self.quantity)
+            self.client.open_pos(self.symbol, 'sell', self.quantity)
 
     def _fix_trend(self, poss, mode):
         if mode == ACTIONS.BUY:
@@ -151,7 +155,7 @@ class Transaction(object):
         if pos_left:  # if existent
             for pos in pos_left:  # iterate over
                 LOGGER.debug("fixing trend for {}".format(pos.instrument))
-                Client().close_pos(pos)
+                self.client.close_pos(pos)
 
     def _get_mode(self):
         args = [self.symbol, self.auto.strategy['count'], self.auto.strategy['timeframe']]

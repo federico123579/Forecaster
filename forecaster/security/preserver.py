@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 forecaster.security.preserver
 ~~~~~~~~~~~~~~
@@ -10,19 +8,21 @@ Facade class to preserve profits.
 import logging
 
 from forecaster.handler import Client
+from forecaster.patterns import Singleton
+from forecaster.utils import read_strategy
 
 LOGGER = logging.getLogger('forecaster.predict')
 
 
-class Preserver(object):
+class Preserver(metaclass=Singleton):
     """module that preserve funds"""
 
-    def __init__(self, strat):
-        self.strategy = strat['preserver']
+    def __init__(self):
+        self.strategy = read_strategy('preserver')
         self.allow_high_risk = self.strategy['allow_high_risk']
         self.funds_risk = self.strategy['funds_risk']
         self.concurrent_movements = self.strategy['concurrent_movements']
-        self.risk_factor = {x[0]: x[2] for x in strat['currencies']}
+        self.risk_factor = {x[0]: x[2] for x in self.strategy['currencies']}
         LOGGER.debug("Preserver initied")
 
     def check_high_risk(self, symbol):
@@ -49,7 +49,3 @@ class Preserver(object):
         used_funds = total_funds - free_funds
         avaible_margin = self.funds_risk * total_funds - used_funds
         return max(avaible_margin, 0)
-
-    def get_usable_margin(self):
-        """get usable margin for calculating quantities"""
-        # TODO FOR AUTOMATON

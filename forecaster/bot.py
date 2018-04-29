@@ -27,6 +27,7 @@ MEDIATE_EVENTS = [
     EVENTS.CLOSED_ALL_POS,
     EVENTS.CLOSED_POS,
     EVENTS.MARKET_CLOSED,
+    EVENTS.PRODUCT_NOT_AVAIBLE,
     EVENTS.MISSING_DATA,
     EVENTS.OPENED_POS]
 
@@ -41,9 +42,9 @@ class Bot(Chainer):
         self.client = Client(self)
         self.mediate = Mediator(self)
         # LEVEL ONE - algorithmic core
-        self.predict = Predicter('predict', self)
+        self.predict = Predicter(self)
         # LEVEL TWO - automation
-        self.automate = Automaton('automate', self)
+        self.automate = Automaton(self)
 
     def handle_request(self, request, **kw):
         """handle requests from chainers"""
@@ -56,22 +57,25 @@ class Bot(Chainer):
         # shutdown the foreground
         elif request == ACTIONS.SHUTDOWN:
             self.stop()
-        # echo actions
-        elif request in [ACTIONS.PREDICT, ACTIONS.SCORE]:
-            return self.echo_request(self.predict, request, **kw)
+        # get prediction
+        elif request == ACTIONS.PREDICT:
+            return self.predict.predict(*kw['args'])
+        # get score
+        elif request == ACTIONS.SCORE:
+            return self.predict.get_score(*kw['args'])
         # notify handler
         elif request == ACTIONS.CHANGE_MODE:
-            return self.echo_request(self.client, request, **kw)
+            return self.client.change_mode(kw['mode'])
         # swap mode
         elif request == EVENTS.MODE_FAILURE:
-            self.echo_request(self.mediate, EVENTS.MODE_FAILURE)
+            LOGGER.warning("Mode failed to login")
             self.client.swap()
-        # notify mediator
+        # assign to mediator
         elif request in MEDIATE_EVENTS:
             self.echo_request(self.mediate, request, **kw)
         # connection error
         elif request == EVENTS.CONNECTION_ERROR:
-            self.echo_request(self.mediate, request)
+            self.mediate.log("Connection error caught")
             self.handle_request(ACTIONS.STOP_BOT)
             self.mediate.log("Bot stopped")
             raise

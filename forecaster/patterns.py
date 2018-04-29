@@ -29,15 +29,17 @@ class Singleton(type):
 
 
 # -[ CHAINER ]-
-class Chainer():
+class Chainer(metaclass=abc.ABCMeta):
     """
     Define an interface for handling requests.
     Implement the successor link.
     """
 
-    def __init__(self, successor=None, **kw):
+    def __init__(self):
+        self._successor = None
+
+    def attach_successor(self, successor):
         self._successor = successor
-        super().__init__(**kw)
 
     def echo_request(self, chainer, request, **kwargs):
         return chainer.handle_request(request, **kwargs)
@@ -46,35 +48,55 @@ class Chainer():
         if self._successor is not None:
             return self._successor.handle_request(request, **kwargs)
 
+    @abc.abstractmethod
     def handle_request(self):
-        raise NotImplementedError()
+        pass
 
 
-# -[ STATER ]-
-class StateContext():
+# -[ OBSERVER ]-
+class Subject(object):
     """
-    Define the interface of interest to clients.
-    Maintain an instance of a ConcreteState subclass that defines the
-    current state.
+    Know its observers. Any number of Observer objects may observe a
+    subject.
+    Send a notification to its observers when its state changes.
     """
 
-    def __init__(self, state, **kw):
-        self._state = state
-        super().__init__(**kw)
+    def __init__(self):
+        self._observers = set()
+        self._subject_state = None
 
-    def set_state(self, state):
-        self._state = state
+    def attach_observer(self, observer):
+        observer._subject = self
+        self._observers.add(observer)
 
-    def handle_state(self, action=None):
-        self._state.handle(self, action)
+    def detach_observer(self, observer):
+        observer._subject = None
+        self._observers.discard(observer)
+
+    def _notify(self):
+        for observer in self._observers:
+            observer.handle_notify(self._subject_state)
+
+    @property
+    def subject_state(self):
+        return self._subject_state
+
+    @subject_state.setter
+    def subject_state(self, arg):
+        self._subject_state = arg
+        self._notify()
 
 
-class State(metaclass=abc.ABCMeta):
+class Observer(metaclass=abc.ABCMeta):
     """
-    Define an interface for encapsulating the behavior associated with a
-    particular state of the Context.
+    Define an updating interface for objects that should be notified of
+    changes in a subject.
     """
+
+    def __init__(self):
+        self._subject = None
+        self._observer_state = None
 
     @abc.abstractmethod
-    def handle(self):
+    def handle_notify(self, arg):
         pass
