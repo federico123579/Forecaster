@@ -36,7 +36,7 @@ logging.config.dictConfig({
             'formatter': 'mov_form',
             'filename': os.path.join(
                 os.path.dirname(__file__), 'logs/movlist.log'),
-            'mode': 'w'
+            'mode': 'a'
         }
     },
     'loggers': {

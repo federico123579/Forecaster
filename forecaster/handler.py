@@ -148,16 +148,26 @@ class Client(Chainer, metaclass=Singleton):
 
     def refresh(self):
         """refresh the session"""
-        try:
-            self.api.refresh()
-        except trading212api.exceptions.RequestError:
-            LOGGER.warning("API unavaible")
-            self._auto_login()
-            self.api.refresh()
-        except requests.exceptions.ConnectionError:
-            LOGGER.error("Connection error")
-            SentryClient().captureException()
-            self.handle_request(EVENTS.CONNECTION_ERROR)
+        n_err = 0
+        while True:
+            try:
+                self.api.refresh()
+                break
+            except trading212api.exceptions.RequestError:
+                LOGGER.warning("API unavaible")
+                self._auto_login()
+                self.api.refresh()
+                break
+            except requests.exceptions.ConnectionError:
+                LOGGER.error("Connection error")
+                SentryClient().captureException()
+                n_err += 1
+                if n_err < 6:
+                    LOGGER.warning("reconnection #%s" % n_err)
+                    time.sleep(1)  # sleep one second and cycle again
+                    continue
+                self.handle_request(EVENTS.CONNECTION_ERROR)
+                break
 
     def swap(self):
         """swap mode"""
