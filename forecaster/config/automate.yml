@@ -3,19 +3,19 @@ fix_trend:          true
 fixed_quantity:     true
 currencies:
 # MARGIN: 100 / 5 = 20
-  - [AUDUSD, 4926, 0]   # margin: €10.15 x 2500
+  - [AUDUSD, 2500, 0]   # margin: €10.15 x 2500
   # - [EURCHF, 2500, 0] # margin: €25 x 2500
-  - [EURGBP, 6060, 0]   # margin: €8.25 x 2500
+  - [EURGBP, 2500, 0]   # margin: €8.25 x 2500
   # - [EURRUB, 2000, 1] # margin: €80 x 2000
-  - [EURJPY, 4000, 0]   # margin: €12.5 x 2500
-  - [EURUSD, 6060, 0]   # margin: €8.25 x 2500
-  - [GBPUSD, 5330, 0]   # margin: €9.38 x 2500
-  - [USDCAD, 7012, 0]   # margin: €7.13 x 2500
-  - [USDCHF, 4625, 0]   # margin: €10.81 x 2500
+  - [EURJPY, 2500, 0]   # margin: €12.5 x 2500
+  - [EURUSD, 2500, 0]   # margin: €8.25 x 2500
+  - [GBPUSD, 2500, 0]   # margin: €9.38 x 2500
+  - [USDCAD, 2500, 0]   # margin: €7.13 x 2500
+  - [USDCHF, 2500, 0]   # margin: €10.81 x 2500
   # - [USDRUB, 2000, 1] # margin: €69.20 x 2000
-  - [USDJPY, 7012, 0]   # margin: €7.13 x 2500
-sleep_transactions: 3600
-timeframe: 1h
+  - [USDJPY, 2500, 0]   # margin: €7.13 x 2500
+sleep_transactions: 86400
+timeframe: 1d
 count: 5
 
 # [ PRESERVER ]
@@ -26,10 +26,10 @@ preserver:
 
 # [ CHECKER ]
 checkers:
-  activate: [totalfixed, fixed]
+  activate: [totalfixed]
   totalfixed:
     sleep: 60
-    gain: 350
+    gain: 10
     loss: null
   totalrelative:
     sleep: 60
