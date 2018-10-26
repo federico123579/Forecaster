@@ -67,28 +67,23 @@ class Automaton(Chainer):
         while self.LOOP.is_set():
             start = time.time()
             self._open_transactions()
-            self._compose_transactions()
             self._complete_transactions()
             wait_precisely(self.strategy['sleep_transactions'], start, self.LOOP)
 
     def _open_transactions(self):
-        """(1/3) init all transactions"""
+        """(1/2) init all transactions"""
         for symbol in [x[0] for x in self.strategy['currencies']]:
             if self.preserver.check_high_risk(symbol):
                 if not self.preserver.allow_high_risk:
                     continue
             self.transactions.append(Transaction(symbol, self))
+        for trans in self.transactions:
+            trans.compose()
+            LOGGER.debug("{} score: {}".format(trans.symbol, trans.score))
         LOGGER.debug("opened {} transactions".format(len(self.transactions)))
 
-    def _compose_transactions(self):
-        """(2/3) compose all transactions"""
-        with ThreadPoolExecutor(10) as executor:
-            for trans in self.transactions:
-                executor.submit(trans.compose)
-        LOGGER.debug("composed {} transactions".format(len(self.transactions)))
-
     def _complete_transactions(self):
-        """(3/3) complete all transactions"""
+        """(2/2) complete all transactions"""
         old_len_pos = len(Client().positions)
         with ThreadPoolExecutor(10) as executor:
             scores = sorted(self.transactions, key=lambda x: x.score)
@@ -117,6 +112,7 @@ class Transaction(object):
         self.symbol = symbol
         self.fix = automaton.strategy['fix_trend']
         self.fix_quant = automaton.strategy['fixed_quantity']
+        self.score = 0
 
     def compose(self):
         """complete mode and quantity"""
@@ -126,12 +122,15 @@ class Transaction(object):
         self.score = self.auto.handle_request(ACTIONS.SCORE, args=args)
 
     def complete(self):
-        Client().refresh()
-        poss = [pos for pos in Client().positions if pos.instrument == self.symbol]
-        if self.fix:  # if requested to fix
-            self._fix_trend(poss, self.mode)
-        self.open()
-        LOGGER.debug("transaction with score of {:.4f} completed".format(self.score))
+        try:
+            Client().refresh()
+            poss = [pos for pos in Client().positions if pos.instrument == self.symbol]
+            if self.fix:  # if requested to fix
+                self._fix_trend(poss, self.mode)
+            self.open()
+            LOGGER.debug("transaction with score of {:.4f} completed".format(self.score))
+        except Exception as e:
+            LOGGER.error(e)
 
     def open(self):
         if not self.auto.preserver.check_margin(self.symbol, self.quantity):
