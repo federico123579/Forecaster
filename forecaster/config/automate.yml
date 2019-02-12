@@ -29,7 +29,7 @@ checkers:
   activate: [totalfixed]
   totalfixed:
     sleep: 60
-    gain: 10
+    gain: 9.5
     loss: null
   totalrelative:
     sleep: 60

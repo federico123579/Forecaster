@@ -44,11 +44,18 @@ class PositionChecker(Chainer, metaclass=abc.ABCMeta):
         """run method for threading"""
         while self.active.is_set():
             start = time.time()  # record timing
-            for pos in Client().positions:
-                Client().refresh()  # refresh and update
-                action = self.check(pos)
-                if action is not None:
-                    self.handle_request(action, pos=pos, checker=self.__class__.__name__)
+            try:
+                for pos in Client().positions:
+                    Client().refresh()  # refresh and update
+                    action = self.check(pos)
+                    if action is not None:
+                        self.handle_request(action, pos=pos, checker=self.__class__.__name__)
+            except Exception as e:
+                LOGGER.error("Caught exception in checker {}".format(self.__class__.__name__))
+                LOGGER.error(e)
+                LOGGER.error("continuing in 10 seconds...")
+                time.sleep(10)
+                continue
             wait_precisely(self.sleep_time, start, self.active)  # wait and repeat
 
     def start(self):
