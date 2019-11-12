@@ -28,6 +28,7 @@ class ACTIONS(Enum):
     GET_USABLE_MARGIN = auto()
     BUY = 'buy'
     SELL = 'sell'
+    CLOSE = auto()
 
 
 class STATUS(Enum):

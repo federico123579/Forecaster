@@ -1,7 +1,7 @@
 from setuptools import find_packages, setup
 
 __AUTHOR__ = "Federico Lolli"
-__version__ = "v0.1a1"
+__version__ = "v0.1a2"
 
 
 setup(
@@ -9,9 +9,10 @@ setup(
     version=__version__,
     packages=find_packages(),
     install_requires=[
-        'scipy',
+        #'scipy',
+        'pandas',
         'pyyaml',
-        'trading212api',
+        'XTBApi',
         'python-telegram-bot',
         'raven',
         'termcolor',
@@ -25,7 +26,7 @@ setup(
     include_package_data=True,
     package_data={'': ['logs/.gitkeep', '**/*.yml', 'run.sh']},
     zip_safe=False,
-    author="Federico Lolli",
+    author=__AUTHOR__,
     author_email="federico123579@gmail.com",
     description="Package that predict using algorithms",
     license="MIT",

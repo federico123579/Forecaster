@@ -32,6 +32,7 @@ class TelegramMediator(Chainer):
         self.updater = Updater(token=token)
         self.dispatcher = self.updater.dispatcher
         self._handlers = []
+        self.credentials = {}
 
     def handle_request(self, event, **kw):
         return self.pass_request(event, **kw)
@@ -143,7 +144,6 @@ class TelegramMediator(Chainer):
 
     def username_key(self, bot, update, chat_data):
         chat_data['username'] = update.message.text
-        self.credentials = {}
         self.credentials['username'] = chat_data['username']
         update.message.reply_text("Please insert password")
         return 'password_key'
@@ -171,7 +171,7 @@ class TelegramMediator(Chainer):
         LOGGER.debug("valued command caught")
         self.renew_connection()
         Client().refresh()
-        result = Client().api.account.funds['result']
+        result = Client().balance_results
         num_pos = len(Client().api.account.positions)
         self.send_msg(
             "Actual value is *{:.2f}* with *{}* positions".format(result, num_pos))
@@ -212,6 +212,9 @@ class TelegramMediator(Chainer):
 
     def open_pos(self, number):
         LOGGER.debug("open_position telegram")
+        if number == 0:
+            LOGGER.debug("bypassing cause 0 opened")
+            return
         self.renew_connection()
         LOGGER.debug("opened {:d} position".format(number))
         self.send_msg("Opened *{:d}* position".format(number))

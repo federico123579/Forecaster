@@ -27,13 +27,16 @@ class Automaton(Chainer):
     def __init__(self, strat, bot):
         super().__init__(bot)
         self.strategy = read_strategy(strat)
-        time_trans = self.strategy['timeframe']
-        self.timeframe = [time_trans, TIMEFRAME[time_trans]]
+        self.currencies = [x[0] for x in self.strategy['currencies']]
+        self.timeframe = self.strategy['timeframe']
+        #self.timeframe = [time_trans, TIMEFRAME[time_trans]]
         self.transactions = []
         # AUTONOMOUS MODULES
         self.preserver = Preserver(self.strategy)
         self.positioner = Positioner(self.strategy)
         self.LOOP = Event()
+        # ADDED IN ALPHA2
+        self.seconds_to_wait = self.strategy['seconds_to_wait']
         LOGGER.debug("AUTOMATON: ready")
 
     def handle_request(self, request, **kw):
@@ -46,13 +49,15 @@ class Automaton(Chainer):
 
     def start(self):
         """start threads"""
+        # EDITED IN ALPHA2
         self.LOOP.set()
         ThreadHandler().add_event(self.LOOP)
         thread = LogThread(target=self.check_closes)  # check closes
         thread.start()
         ThreadHandler().add_thread(thread)
         LOGGER.debug("check_closes thread started")
-        self.positioner.start()
+        # TODO: check the behavior of this
+        # self.positioner.start()
         LOGGER.debug("AUTOMATON: started")
 
     def stop(self):
@@ -63,68 +68,95 @@ class Automaton(Chainer):
 
     def check_closes(self):
         """first thread loop - check close"""
-        wait(self._time_left() + 65, self.LOOP)  # refresh servers
+        # EDITED IN ALPHA2
         while self.LOOP.is_set():
             start = time.time()
-            self._open_transactions()
+            while not any(Client().check_if_market_open(self.currencies)):
+                LOGGER.debug(f"Market closed for all symbol requested, waiting "
+                             f"{self.seconds_to_wait} seconds")
+                wait(self.seconds_to_wait, self.LOOP)
+            symbol_open = [sym for sym, val in Client().check_if_market_open(
+                    self.currencies).items() if val]
+            LOGGER.debug(f"working with {', '.join(symbol_open)}")
+            self._open_transactions(symbol_open)
             self._complete_transactions()
             wait_precisely(self.strategy['sleep_transactions'], start, self.LOOP)
 
-    def _open_transactions(self):
+    def _open_transactions(self, symbol_open_market_list):
         """(1/2) init all transactions"""
-        for symbol in [x[0] for x in self.strategy['currencies']]:
-            if self.preserver.check_high_risk(symbol):
-                if not self.preserver.allow_high_risk:
-                    continue
-            self.transactions.append(Transaction(symbol, self))
+        # EDITED IN ALPHA2
+        for symbol in symbol_open_market_list:
+             # if self.preserver.check_high_risk(symbol):
+             #     if not self.preserver.allow_high_risk:
+             #         continue
+
+            args = [symbol, self.strategy['timeframe'], self.strategy['count']]
+            action = self.handle_request(ACTIONS.PREDICT, args=args)
+            if action in [ACTIONS.BUY, ACTIONS.SELL]:
+                self.transactions.append(Transaction(symbol, action, self))
+            else:
+                pass
         for trans in self.transactions:
             trans.compose()
-            LOGGER.debug("{} score: {}".format(trans.symbol, trans.score))
+            #LOGGER.debug("{} score: {}".format(trans.symbol, trans.score))
         LOGGER.debug("opened {} transactions".format(len(self.transactions)))
 
     def _complete_transactions(self):
         """(2/2) complete all transactions"""
-        old_len_pos = len(Client().positions)
+        old_len_pos = Client().get_position_len()
         with ThreadPoolExecutor(10) as executor:
-            scores = sorted(self.transactions, key=lambda x: x.score)
-            scores = scores[::-1][:self.preserver.concurrent_movements]
-            for trans in scores:
+            trans_list = self.transactions
+            trans_list = trans_list[:self.preserver.concurrent_movements -
+                                    old_len_pos]
+            for trans in trans_list:
                 executor.submit(trans.complete)
-        LOGGER.debug("completed {} transactions".format(len(Client().positions) - old_len_pos))
-        self.handle_request(EVENTS.OPENED_POS, number=len(Client().positions) - old_len_pos)
+        LOGGER.debug("completed {} transactions".format(
+            Client().get_position_len() - old_len_pos))
+        self.handle_request(EVENTS.OPENED_POS,
+                            number=Client().get_position_len() - old_len_pos)
         self.transactions.clear()
 
-    def _time_left(self):
-        """get time left to update of hist data"""
-        # check EURUSD for convention
-        hist = Client().api.get_historical_data('EURUSD', 1, self.timeframe[0])
-        last_time = int(hist[0]['timestamp']) / 1000  # remove milliseconds
-        time_left = self.timeframe[1] - (time.time() - last_time) #+ 3600 ADDED FOR LEGAL HOUR
-        while time_left < 0:  # skip cycles
-            time_left += self.timeframe[1]
-        LOGGER.debug("time left (in minutes): {}".format(time_left / 60))
-        return time_left
+#    def _market_open(self):
+#        """get time left to update of hist data"""
+#        # EDITED IN ALPHA2
+#        market_op_symbols = Client().check_if_market_open(self.currencies)
+#        for symbol in market_op_symbols.keys():
+#            if market_op_symbols[symbol]:
+#
+#        # hist = Client().api.get_historical_data('EURUSD', 1,
+#        # self.timeframe[0])
+#        # last_time = int(hist[0]['timestamp']) / 1000  # remove milliseconds
+#        # time_left = self.timeframe[1] - (time.time() - last_time) #+ 3600
+#        # # ADDED FOR LEGAL HOUR#
+#        # while time_left < 0:  # skip cycles#
+#        #     time_left += self.timeframe[1]#
+#        # LOGGER.debug("time left (in minutes): {}".format(time_left / 60))#
+#        return time_left
 
 
 class Transaction(object):
-    def __init__(self, symbol, automaton):
+# EDITED IN ALPHA2
+    def __init__(self, symbol, automaton, mode):
         self.auto = automaton
         self.symbol = symbol
         self.fix = automaton.strategy['fix_trend']
         self.fix_quant = automaton.strategy['fixed_quantity']
-        self.score = 0
+        self.mode = mode
+        #self.score = 0
 
     def compose(self):
         """complete mode and quantity"""
-        self.mode = self._get_mode()
+        #self.mode = self._get_mode()
         self.quantity = self._get_quantity()
-        args = [self.symbol, self.auto.strategy['count'], self.auto.strategy['timeframe']]
-        self.score = self.auto.handle_request(ACTIONS.SCORE, args=args)
+        #args = [self.symbol, self.auto.strategy['count'],
+        # self.auto.strategy['timeframe']]
+        #self.score = self.auto.handle_request(ACTIONS.SCORE, args=args)
 
     def complete(self):
         try:
             Client().refresh()
-            poss = [pos for pos in Client().positions if pos.instrument == self.symbol]
+            poss = [pos for pos in Client().positions if pos.symbol ==
+                    self.symbol]
             if self.fix:  # if requested to fix
                 self._fix_trend(poss, self.mode)
             self.open()
@@ -152,9 +184,10 @@ class Transaction(object):
                 LOGGER.debug("fixing trend for {}".format(pos.instrument))
                 Client().close_pos(pos)
 
-    def _get_mode(self):
-        args = [self.symbol, self.auto.strategy['count'], self.auto.strategy['timeframe']]
-        return self.auto.handle_request(ACTIONS.PREDICT, args=args)
+    #def _get_mode(self):
+    #    args = [self.symbol, self.auto.strategy['timeframe'],
+    #            self.auto.strategy['count']]
+    #    return self.auto.handle_request(ACTIONS.PREDICT, args=args)
 
     def _get_quantity(self):
         quantity = [x[1] for x in self.auto.strategy['currencies'] if x[0] == self.symbol][0]

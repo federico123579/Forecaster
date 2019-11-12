@@ -2,25 +2,30 @@
 fix_trend:          true
 fixed_quantity:     true
 currencies:
+  - [EURUSD, 0.01]
+  - [AUDUSD, 0.01]
+  - [USDJPY, 0.01]
 # MARGIN: 100 / 5 = 20
-  - [AUDUSD, 2500, 0]   # margin: €10.15 x 2500
-  # - [EURCHF, 2500, 0] # margin: €25 x 2500
-  - [EURGBP, 2500, 0]   # margin: €8.25 x 2500
-  # - [EURRUB, 2000, 1] # margin: €80 x 2000
-  - [EURJPY, 2500, 0]   # margin: €12.5 x 2500
-  - [EURUSD, 2500, 0]   # margin: €8.25 x 2500
-  - [GBPUSD, 2500, 0]   # margin: €9.38 x 2500
-  - [USDCAD, 2500, 0]   # margin: €7.13 x 2500
-  - [USDCHF, 2500, 0]   # margin: €10.81 x 2500
-  # - [USDRUB, 2000, 1] # margin: €69.20 x 2000
-  - [USDJPY, 2500, 0]   # margin: €7.13 x 2500
-sleep_transactions: 86400
-timeframe: 1d
+#  - [AUDUSD, 2500, 0]   # margin: €10.15 x 2500
+#  # - [EURCHF, 2500, 0] # margin: €25 x 2500
+#  - [EURGBP, 2500, 0]   # margin: €8.25 x 2500
+#  # - [EURRUB, 2000, 1] # margin: €80 x 2000
+#  - [EURJPY, 2500, 0]   # margin: €12.5 x 2500
+#  - [EURUSD, 2500, 0]   # margin: €8.25 x 2500
+#  - [GBPUSD, 2500, 0]   # margin: €9.38 x 2500
+#  - [USDCAD, 2500, 0]   # margin: €7.13 x 2500
+#  - [USDCHF, 2500, 0]   # margin: €10.81 x 2500
+#  # - [USDRUB, 2000, 1] # margin: €69.20 x 2000
+#  - [USDJPY, 2500, 0]   # margin: €7.13 x 2500
+sleep_transactions: 60
+timeframe: 300
 count: 5
+# seconds to wait if market is closed before trying again
+seconds_to_wait: 600
 
 # [ PRESERVER ]
 preserver:
-  allow_high_risk:  false
+#  allow_high_risk:  false
   funds_risk: 0.5
   concurrent_movements: 5
 
