@@ -24,7 +24,7 @@ Install just with pip:
 
 ``` bash
    cd Forecaster/
-   setup install -e .
+   pip install -e .
 ```
 
 Then run setup.sh to save the tokens needed by the software.
