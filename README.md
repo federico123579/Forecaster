@@ -4,13 +4,13 @@
 
 # Forecaster
 
-A trading software that use a mean reversion algorithm to predict trend in regolar time spans and make transaction to Trading212 broker service using the Trading212 APIs (that I've made before).
+A trading software that uses various algorithms to predict trend in regolar time spans and make transaction to Trading212 broker service using the Trading212 APIs (that I've made before). In other branches it uses XTBApi (another api built by me) and different algorithm tested with Foreanalyser. **There's a lot of work to do here, if you like you can help me build this. Contact me at federico123579@gmail.com.**
 
 ## Behavior
 
 ### Algorithm
 
-The algorithm used is the Mean Reversion with this formula:
+One of the many algorithms I used is the Mean Reversion with this formula:
 
 <p align="center">
   <img src="./static/formula-1.png" alt="Forecaster Logo">
@@ -23,7 +23,8 @@ with `avg` as a **price average**, `mult` for a **costant** and `dev` for a **de
 Install just with pip:
 
 ``` bash
-   pip install forecaster
+   cd Forecaster/
+   setup install -e .
 ```
 
 Then run setup.sh to save the tokens needed by the software.
