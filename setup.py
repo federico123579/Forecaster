@@ -24,13 +24,13 @@ VERSION = None
 # What packages are required for this module to be executed?
 REQUIRED = [
     'foreanalyzer',
-    #"forex_python",
     "XTBApi",
+    "click",
+    "rich",
+    #"forex_python",
     #"pandas",
     #"PyYAML",
     #"numpy",
-    #"click",
-    #"rich",
     #"TA-Lib"
     #'pyyaml',
     #'python-telegram-bot',
@@ -127,7 +127,7 @@ setup(
     # py_modules=['mypackage'],
     install_requires=REQUIRED,
     entry_points={
-        'console_scripts': ['foreanalyzer=foreanalyzer.cli:main']
+        'console_scripts': ['forecaster=forecaster.bot:main']
     },
     extras_require=EXTRAS,
     include_package_data=True,
