@@ -28,6 +28,15 @@ def WARN(text):
     ForeCliConsole().warn(text, "bot")
 
 
+def measure_time(text_to_dispaly, func, *args, **kwargs):
+    """measure time of execution and log"""
+    start = time.time()
+    res = func(*args, **kwargs)
+    sec = time.time() - start
+    DEBUG(f"{text_to_dispaly} took {sec:.2f}s", level=2)
+    return res
+
+
 # ~ * BOT RELATED OBJECTS * ~
 class Account(object):
     """account object"""
@@ -131,7 +140,8 @@ class ForeBot():
         self.plotter = PlotterFactory['CDSPLT'](
             instruments=[self.instrument.name],
             feeders=['XTBF01'],
-            timeframe=self.timeframe)
+            timeframe=self.timeframe,
+            time_past=3600*24*14)
         _xtbapi_level = logging.getLogger("XTBApi").getEffectiveLevel()
         logging.getLogger("XTBApi").setLevel(logging.WARNING)
         DEBUG("turned off XTBApi logger", 3)
@@ -152,21 +162,25 @@ class ForeBot():
         write_int_config(config)
         DEBUG("credentials config saved")
 
-    def check_open(self):
-        """check if conditions are met for open positions"""
-        # TODO: check if prev_et is updated
+    def check_open(self, candle):
+        """check if conditions are met for open positions, get candle from ForeBot.get_candle()"""
+        # TODO: add better logging
+        # TODO: check if candle is updated
         # TODO: check updated time and wait or return none
         self._check_setup()
         current_price = self.instrument.get_info().ask_price
         # open short
-        if (current_price > prev_et['BBANDS_30_up']) and (prev_et['close'] < prev_et['SMA_50']):
+        if (current_price > candle['BBANDS_30_up']) and (candle['close'] < candle['SMA_50']):
+            DEBUG(f"entering on short")
             self.open_trade('sell')
         # open long
-        elif (current_price < prev_et['BBANDS_30_dw']) and (prev_et['close'] > prev_et['SMA_50']):
+        elif (current_price < candle['BBANDS_30_dw']) and (candle['close'] > candle['SMA_50']):
+            DEBUG(f"entering on long")
             self.open_trade('buy')
 
     def close_trade(self, generic_id, type_of_id=0):
         """close trade with two different ids (order, opentrade)"""
+        # TODO: add better logging
         if (generic_id not in self.account.opentrade_ids) and (
                 generic_id not in self.account.order_ids):
             WARN(f"order {generic_id} of type {type_of_id} alredy closed")
@@ -178,28 +192,30 @@ class ForeBot():
     
     def get_candle(self):
         """check if a new candle is needed a return data"""
+        # TODO: add better logging
         # minutes from last close of a stable candle
-        m_last_close = math.floor((time.time() - self._last_candle_tmstp) / 60) - 30
-        if m_last_close < 30:
+        def _get_m_last_close():
+            return math.floor((time.time() - self._last_candle_tmstp) / 60) - 30
+        if _get_m_last_close() < 30: # return old candle
             return self.data.iloc[-2]
-        else:
+        else: # new candle requested
             market_open = self.client.check_if_market_open(
                 self.instrument.name)[self.instrument_name]
-            if not market_open:
+            if not market_open: # wait until market opens
                 # TODO: wait until market opens
                 WARN(f"Market Closed") # FIXME
-            else:
-                while m_last_close >= 30:
-                    entry = self._get_data().iloc[-2]
+            else: # market is open
+                n = 0 # log tries
+                while _get_m_last_close() >= 30:
+                    DEBUG(f"trying to get new candle: try #{n}")
+                    entry = measure_time("func ForeBot._get_data", self._get_data).iloc[-2]
                     self._last_candle_tmstp = entry.name.to_pydatetime().timestamp()
-                    m_last_close = math.floor((time.time() - self._last_candle_tmstp) / 60) - 30
-                    # TODO: work on this
-            pass
-        self._last_candle_tmstp = None
-        prev_et.name.to_pydatetime().timestamp()
+                    n += 1
+                return entry
 
     def open_trade(self, mode):
         """open a new transaction and calc volume"""
+        # TODO: add better logging
         self._check_setup()
         self.instrument.get_info()
         self.account.update_balance()
@@ -273,11 +289,14 @@ def main(verbose):
     VOLUME_PERCENTAGE = 0.1
     bot = ForeBot(USERNAME, PASSWORD, MODE, INSTRUMENT, VOLUME_PERCENTAGE)
     bot.setup() # set up the bot, starts the api client
-    data = bot._get_data()
-    prev_et = data.iloc[-2] # get the last stable
-    candle_open_tmstp = prev_et.name.to_pydatetime().timestamp()
-    m_from_last_close = math.floor((time.time() - candle_open_tmstp) / 60) - 30
-    bot.get_candle()
+    start = time.time()
+    while time.time() - start < 60:
+        pr = bot.instrument.get_info().ask_price
+        DEBUG(f"price: {pr}")
+    for i in range(15):
+        candle = bot.get_candle()
+        bot.check_open(candle)
+        DEBUG(f"{i} - got candle {candle.name}")
     pass
 
 
