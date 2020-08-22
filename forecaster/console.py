@@ -32,7 +32,7 @@ logging.config.dictConfig({
             'filename': os.path.join(
                 os.path.dirname(__file__), 'logs', 'logfile.log'),
             'when': 'midnight',
-            'backupCount': 3
+            'backupCount': 30
         }
     },
     'loggers': {

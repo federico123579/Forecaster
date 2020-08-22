@@ -18,6 +18,7 @@ import XTBApi.exceptions as xtbexc
 
 from forecaster.console import ForeCliConsole
 import forecaster.exceptions as exc
+from forecaster.log_summary import LogRecap
 
 
 # ~ * DEBUG * ~
@@ -300,7 +301,7 @@ class ForeBot():
 
 
 # ~~~ * MAIN COMMAND * ~~~~
-@click.command()
+@click.group()
 @click.option('-v', '--verbose', count=True, default=0, show_default=True)
 def main(verbose):
     ForeCliConsole().verbose = verbose
@@ -323,5 +324,11 @@ def run():
     while (time.time() - start) < 30:
         bot.main_loop()
 
+@main.command()
+def logsummary():
+    """digest logfile and make a summary"""
+    log_recap = LogRecap()
+    log_recap.main()
 
-main()
+
+run()
