@@ -101,4 +101,4 @@ class ForeCliConsole(metaclass=SingletonMeta):
     def error(self, text, prefix=None):
         logging.getLogger(f"forecaster.{prefix}").error(text)
         #self.log(self._color_markup(text, "196"))
-        self.log(self._color_markup(text, "red"), prefix)
+        self.log(self._color_markup(self._color_markup(text, "red"), "bold"), prefix)
