@@ -26,6 +26,8 @@ REQUIRED = [
     'foreanalyzer',
     "XTBApi",
     "click",
+    'python-telegram-bot',
+    'sentry-sdk',
     "rich",
     #"forex_python",
     #"pandas",
@@ -33,8 +35,6 @@ REQUIRED = [
     #"numpy",
     #"TA-Lib"
     #'pyyaml',
-    #'python-telegram-bot',
-    #'raven',
     #'termcolor',
 ]
 
@@ -127,7 +127,7 @@ setup(
     # py_modules=['mypackage'],
     install_requires=REQUIRED,
     entry_points={
-        'console_scripts': ['forecaster=forecaster.bot:main']
+        'console_scripts': ['forecaster=forecaster.main:main']
     },
     extras_require=EXTRAS,
     include_package_data=True,

@@ -7,18 +7,17 @@
 import logging
 import math
 import os
+import signal
 import time
 
-import click
 from foreanalyzer.api_handler import APIHandler
 from foreanalyzer.cache_optimization import cache_path, load_cache, save_cache
 from foreanalyzer.plot_hanlder import PlotterFactory
 from foreanalyzer.utils import read_int_config, write_int_config
-import XTBApi.exceptions as xtbexc
+import sentry_sdk
 
 from forecaster.console import ForeCliConsole
 import forecaster.exceptions as exc
-from forecaster.log_summary import LogRecap
 
 
 # ~ * DEBUG * ~
@@ -119,8 +118,8 @@ class Instrument(object):
 # ~~~ * MAIN BOT * ~~~~
 class ForeBot():
     """main class"""
-    def __init__(self, username, password, mode='demo', instrument='EURUSD',
-                 volume_percentage=0.4, timeframe=1800):
+    def __init__(self, username, password, mediator, mode='demo',
+                 instrument='EURUSD', volume_percentage=0.4, timeframe=1800):
         self._last_candle_tmstp = 0
         self._status = {
             'setup': 0, # 0 not set up - 1 set up
@@ -134,6 +133,7 @@ class ForeBot():
         self.mode = mode
         self.password = password
         self.plotter = None
+        self.mediator = mediator
         self.timeframe = timeframe
         self.user_id = username
         self.vol_perc = volume_percentage # percentage * account balance = money spent on new trans margin
@@ -249,19 +249,15 @@ class ForeBot():
                     WARN(f"candle is late - try #{n}")
             return entry
 
-    def main_loop(self):
-        """turn on the main loop of check signals"""
+    def bot_loop_step(self):
+        """one instance of main loop of check signals
+        take a look to mediator interface for entire loop"""
         # TODO: try/except with client logout and keyboard interrupt
-        try:
-            candle = self.get_candle()
-            if self._status['check_mode'] == 0:
-                self.check_open(candle)
-            elif self._status['check_mode'] == 1:
-                self.check_close(candle)
-        except exc.MarketClosed:
-            time.sleep(1)
-        except Exception as e:
-            pass # TODO: add sentry integration and control
+        candle = self.get_candle()
+        if self._status['check_mode'] == 0:
+            self.check_open(candle)
+        elif self._status['check_mode'] == 1:
+            self.check_close(candle)
 
     def open_trade(self, mode):
         """open a new transaction and calc volume"""
@@ -297,38 +293,12 @@ class ForeBot():
         self.instrument = Instrument(self.instrument_name, self.client)
         self.account = Account(self.client)
         self._status['setup'] = 1 # bot set up
+        sentry_sdk.init(
+            "https://7f139cba9f874b8fba92b329b915daf1@o55926.ingest.sentry.io/301769",
+            traces_sample_rate = 1.0)
         DEBUG("Bot and xtb client set up")
 
-
-# ~~~ * MAIN COMMAND * ~~~~
-@click.group()
-@click.option('-v', '--verbose', count=True, default=0, show_default=True)
-def main(verbose):
-    ForeCliConsole().verbose = verbose
-
-@main.command()
-def run():
-    bot = ForeBot(
-        username='11361612',
-        password='TestTest1.',
-        telegram_token='548272219:AAHo1jOMFNJ5A3TzPLhzqwm-qBCwEYVbJ7g',
-        mode='demo',
-        instrument='EURUSD',
-        volume_percentage=0.4)
-    try: # TODO: try anc catch all exceptions
-        bot.setup() # set up the bot, starts the api client
-    except xtbexc.NoInternetConnection:
-        ERROR("no internet connection")
-        return
-    start = time.time()
-    while (time.time() - start) < 30:
-        bot.main_loop()
-
-@main.command()
-def logsummary():
-    """digest logfile and make a summary"""
-    log_recap = LogRecap()
-    log_recap.main()
-
-
-run()
+    def terminate(self):
+        """terminate the process with external measures"""
+        DEBUG("terminating bot")
+        os.kill(os.getpid(), signal.SIGINT)
