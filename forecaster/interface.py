@@ -100,11 +100,6 @@ class TelegramHandler(object):
         self.mediator.stop_bot()
         self.send_msg("Bot stopped")
 
-    def deactivate(self):
-        """turn off polling"""
-        self._updater.stop()
-        DEBUG("Telegram stopped")
-
     def send_msg(self, text, **kwargs):
         """send message with formatting"""
         self._tbot.send_message(chat_id=self.chat_id, text=text,

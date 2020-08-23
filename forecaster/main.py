@@ -54,18 +54,17 @@ class Mediator(object):
         while STATUS().bot.is_set():
             try:
                 self.bot.bot_loop_step()
-            except exc.MarketClosed:
-                wait(30, STATUS().bot)
+            except exc.MarketClosed as e:
+                wait(e.time_to_open, STATUS().bot)
             except Exception as e:
                 ERROR(e)
                 self.alert(
-                    "BOT STOPPED DUE TO AN EXCEPTION, MANUAL OPERATION REQUIRED")
+                    "**BOT STOPPED DUE TO AN EXCEPTION, MANUAL OPERATION REQUIRED**")
                 self.shutdown()
                 return
     
     def shutdown(self):
         self.stop_bot()
-        self.stop_listening()
         ThreadHandler().stop_all()
         self.bot.terminate()
 
@@ -86,7 +85,6 @@ class Mediator(object):
         - CALLED BY: bot"""
         if STATUS().telegram == 0:
             self.telegram.activate()
-            STATUS().telegram = 1
         else:
             WARN("telegram is already listening")
     
@@ -97,15 +95,6 @@ class Mediator(object):
         STATUS().bot.clear()
         ThreadHandler().stop_all()
         DEBUG("bot stopped")
-
-    def stop_listening(self):
-        """telegram: deactivate
-        - CALLED BY: bot"""
-        if STATUS().telegram == 1:
-            self.telegram.deactivate()
-            STATUS().telegram = 0
-        else:
-            WARN("telegram is already not listening")
 
 
 # ~~~ * MAIN COMMAND * ~~~~
@@ -138,3 +127,6 @@ def logsummary():
     """digest logfile and make a summary"""
     log_recap = LogRecap()
     log_recap.main()
+
+#ForeCliConsole().verbose = 3
+#run()

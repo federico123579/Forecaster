@@ -196,7 +196,9 @@ class ForeBot():
         market_open = self.client.check_if_market_open(
             [self.instrument.name])[self.instrument_name]
         if not market_open: # wait until market opens
-            raise exc.MarketClosed()
+            time_to_market_open = self.client.get_time_to_market_open(
+                [self.instrument.name])[self.instrument_name]
+            raise exc.MarketClosed(time_to_market_open)
 
     def check_open(self, candle):
         """check if conditions are met for open positions, get candle from ForeBot.get_candle()"""
@@ -237,16 +239,22 @@ class ForeBot():
             return math.floor((time.time() - self._last_candle_tmstp) / 60) - 30
         if _get_m_last_close() < 30: # return old candle
             return self.data.iloc[-2]
-        else: # new candle requested
+        else: # new candle requested, may take time to update server side data
             self.check_market()
-            n = 0 # log tries
+            n = 1 # log tries
             while _get_m_last_close() >= 30:
                 DEBUG(f"trying to get new candle: try #{n}")
-                entry = measure_time("func ForeBot._get_data", self._get_data).iloc[-2]
-                self._last_candle_tmstp = entry.name.to_pydatetime().timestamp()
-                n += 1
+                entries = measure_time("func ForeBot._get_data", self._get_data)
+                entry = entries.iloc[-2]
+                # takes old if market was closed
+                if _get_m_last_close() >= 60:
+                    WARN("taking older candle") # substract 30 minutes to pass while check
+                    self._last_candle_tmstp = entries.iloc[-1].name.to_pydatetime().timestamp() - 1800
+                else:
+                    self._last_candle_tmstp = entry.name.to_pydatetime().timestamp()
                 if n >= 2:
                     WARN(f"candle is late - try #{n}")
+                n += 1
             return entry
 
     def bot_loop_step(self):
